@@ -12,6 +12,8 @@ const defaultDescription = '若葉祭は、Taki Plaza Gardener (TPG) が主催�
 
 const { title, description = defaultDescription } = Astro.props as Props;
 
+const pageTitle = `${title} - 若葉祭2026`;
+
 // Google FontsのNoto Sans JPを利用
 import '@fontsource-variable/noto-sans-jp';
 ---
@@ -24,12 +26,12 @@ import '@fontsource-variable/noto-sans-jp';
 		<link rel="sitemap" href="/sitemap-index.xml" />
 		<meta name="generator" content={Astro.generator} />
 		<SEO
-			title={`${title} - 若葉祭2026`}
-			description= description
+			title={pageTitle}
+			description={description}
 			charset="UTF-8"
 			openGraph={{
 				basic: {
-					title,
+					title: pageTitle,
 					type: "website",
 					image: "/opengraph.png",
 				},
@@ -37,7 +39,7 @@ import '@fontsource-variable/noto-sans-jp';
 			twitter={{
 				card: 'summary_large_image',
 				site: '@tpgardener',
-				title: title,
+				title: pageTitle,
 				description: description,
 				image: "https://wakabasai.tpgd.jp/opengraph.png",
 			}}
