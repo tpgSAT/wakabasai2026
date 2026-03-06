@@ -11,6 +11,8 @@
   "dependencies": {
     "@astrojs/partytown": "^2.1.4",
     "@astrojs/sitemap": "^3.7.0",
-    "astro": "^5.17.1"
+    "@fontsource-variable/noto-sans-jp": "^5.2.10",
+    "astro": "^5.17.1",
+    "astro-seo": "^1.1.0"
   }
 }
