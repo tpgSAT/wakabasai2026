@@ -11,6 +11,7 @@ import wakabasaiLogo from '@assets/wakabasai_logo.svg';
     <div class="overlay">
       <div class="content">
         <Image src={wakabasaiLogo} alt="若葉祭 2026" class="logo" />
+        <p class="coming-soon">Coming Soon</p>
         <p class="date">4.10 <span>fri</span> – 4.11 <span>sat</span></p>
         <p class="sns-label">最新情報はSNSをチェック！</p>
         <div class="sns">
@@ -71,6 +72,7 @@ import wakabasaiLogo from '@assets/wakabasai_logo.svg';
   .content {
     text-align: center;
     padding: 2rem;
+    font-family: 'Noto Sans JP Variable', 'Noto Sans JP', sans-serif;
   }
 
   .logo {
@@ -78,6 +80,15 @@ import wakabasaiLogo from '@assets/wakabasai_logo.svg';
     width: clamp(180px, 40vw, 320px);
     height: auto;
     margin: 0 auto 1.25rem;
+  }
+
+  .coming-soon {
+    font-size: clamp(0.7rem, 2vw, 0.85rem);
+    color: #666;
+    margin: 0 0 1.25rem;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    font-weight: 400;
   }
 
   .date {
