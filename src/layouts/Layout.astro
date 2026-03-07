@@ -1,5 +1,6 @@
 ---
 import GoogleAnalytics from '@components/GoogleAnalytics.astro';
+import Header from '@components/Header.astro';
 
 import { SEO } from "astro-seo";
 
@@ -62,6 +63,7 @@ import '@fontsource-variable/noto-sans-jp';
 		<GoogleAnalytics />
 	</head>
 	<body>
+		<Header />
 		<slot />
 	</body>
 </html>
