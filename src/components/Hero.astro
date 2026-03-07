@@ -1,0 +1,76 @@
+---
+import { Image } from 'astro:assets';
+import heroBg from '@assets/hero/hero.png';
+import headline from '@assets/hero/headline.svg';
+import dates from '@assets/hero/dates.svg';
+import wakabasaiHighlighted from '@assets/wakabasai_highlighted.svg';
+---
+
+<section class="hero">
+  <Image src={heroBg} alt="" class="hero-bg" />
+
+  <Image
+    src={headline}
+    alt="若葉祭2026キャッチコピー"
+    class="hero-headline"
+  />
+
+  <Image
+    src={wakabasaiHighlighted}
+    alt="若葉祭"
+    class="hero-logo"
+  />
+
+  <Image
+    src={dates}
+    alt="4月10日(金)〜11日(土)"
+    class="hero-dates"
+  />
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    width: 100%;
+    height: 100dvh;
+    overflow: hidden;
+  }
+
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+    z-index: 0;
+  }
+
+  .hero-headline {
+    position: absolute;
+    top: clamp(1.5rem, 5vh, 3rem);
+    right: clamp(1.25rem, 5vw, 3rem);
+    width: clamp(120px, 35vw, 250px);
+    height: auto;
+    z-index: 1;
+  }
+
+  .hero-logo {
+    position: absolute;
+    top: 50%;
+    left: clamp(1.25rem, 5vw, 3rem);
+    transform: translateY(-50%);
+    width: clamp(140px, 50vw, 300px);
+    height: auto;
+    z-index: 1;
+  }
+
+  .hero-dates {
+    position: absolute;
+    bottom: clamp(1.5rem, 10vh, 4rem);
+    left: clamp(1.25rem, 5vw, 3rem);
+    width: clamp(140px, 50vw, 300px);
+    height: auto;
+    z-index: 1;
+  }
+</style>
