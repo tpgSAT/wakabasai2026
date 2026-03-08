@@ -1,6 +1,7 @@
 @import "./typography.css";
+@import "./variables.css";
 
 body {
   font-family: "Noto Sans JP Variable", sans-serif;
-  color: #000000;
+  color: var(--text-black);
 }
