@@ -1,0 +1,6 @@
+@import "./typography.css";
+
+body {
+  font-family: "Noto Sans JP Variable", sans-serif;
+  color: #000000;
+}
