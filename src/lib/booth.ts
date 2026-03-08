@@ -22,7 +22,7 @@ export const boothData: Booth[] = [
         boothLocation: ['Taki Plaza 2F', 'Taki Plaza B2F'],
         hasMapLink: true,
         hasCircleLink: true,
-        MapLink: '#',
+        MapLink: '/map#',
     },
     {
         boothType: 'サークル新歓企画',
@@ -32,7 +32,7 @@ export const boothData: Booth[] = [
         boothLocation: ['Taki Plaza 2F'],
         hasMapLink: true,
         hasCircleLink: true,
-        MapLink: '#',
+        MapLink: '/map#',
     },
     {
         boothType: 'サークル新歓企画',
@@ -42,7 +42,7 @@ export const boothData: Booth[] = [
         boothLocation: ['70周年記念講堂', 'Taki Plaza 外階段'],
         hasMapLink: true,
         hasCircleLink: false,
-        MapLink: '#',
+        MapLink: '/map#',
     },
     {
         boothType: 'TPG企画',
@@ -52,7 +52,7 @@ export const boothData: Booth[] = [
         boothLocation: ['Taki Plaza B1F'],
         hasMapLink: true,
         hasCircleLink: false,
-        MapLink: '#',
+        MapLink: '/map#',
     },
     {
         boothType: 'TPG企画',
@@ -68,10 +68,10 @@ export const boothData: Booth[] = [
         boothType: 'TPG企画',
         boothImg: sampleBoothImg,
         boothTitle: 'キムワイプ卓球',
-        boothDescription: 'キムワイプを使った卓球です！',
+        boothDescription: '理系なら一度はやってみたい！？キムワイプを使って卓球をしよう！',
         boothLocation: ['Taki Plaza B1F'],
         hasMapLink: true,
         hasCircleLink: false,
-        MapLink: '#',
+        MapLink: '/map#',
     },
 ];
