@@ -22,7 +22,7 @@ import HeadingHost from '@assets/heading/host.svg';
   </Section>
   <Section>
     <SectionTitle headingSVG={HeadingBooth} alt="出展団体" />
-    <div class="booths-wrapper">
+    <div class="booths-wrapper" id="booth">
       {boothData.map((booth) => (
         <BoothCard {...booth} />
       ))}
