@@ -1,0 +1,96 @@
+---
+import Layout from '@layouts/Layout.astro';
+import { Image } from 'astro:assets';
+import wakabasaiLogo from '@assets/wakabasai_logo.svg';
+---
+
+<Layout title="404 - ページが見つかりません">
+  <main class="not-found">
+    <div class="nf-content">
+      <p class="nf-code">404</p>
+      <Image src={wakabasaiLogo} alt="若葉祭 2026" class="nf-logo" />
+      <p class="nf-title">ページが見つかりません</p>
+      <p class="nf-message">お探しのページは存在しないか、移動した可能性があります。</p>
+      <a href="/" class="nf-btn">トップページへ戻る</a>
+    </div>
+  </main>
+</Layout>
+
+<style>
+  .not-found {
+    min-height: 100dvh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    font-family: 'Noto Sans JP Variable', 'Noto Sans JP', sans-serif;
+    background: #fafafa;
+  }
+
+  .nf-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0;
+  }
+
+  .nf-code {
+    font-size: clamp(6rem, 20vw, 10rem);
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.04em;
+    color: transparent;
+    -webkit-text-stroke: 2px #e0e0e0;
+    margin: 0 0 1.5rem;
+    user-select: none;
+  }
+
+  .nf-logo {
+    width: clamp(160px, 36vw, 260px);
+    height: auto;
+    margin-bottom: 1.5rem;
+  }
+
+  .nf-title {
+    font-size: clamp(1rem, 3vw, 1.25rem);
+    font-weight: 600;
+    color: #1a1a1a;
+    letter-spacing: 0.08em;
+    margin: 0 0 0.75rem;
+  }
+
+  .nf-message {
+    font-size: clamp(0.8rem, 2vw, 0.9rem);
+    color: #777;
+    letter-spacing: 0.04em;
+    line-height: 1.8;
+    margin: 0 0 2.25rem;
+    max-width: 360px;
+  }
+
+  .nf-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.7rem 1.75rem;
+    border-radius: 100px;
+    background: #1a1a1a;
+    color: #fff;
+    font-size: 0.875rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-decoration: none;
+    transition: background 0.15s, transform 0.15s;
+  }
+
+  .nf-btn::before {
+    content: '←';
+    font-size: 0.9em;
+  }
+
+  .nf-btn:hover {
+    background: #333;
+    transform: translateY(-1px);
+  }
+</style>

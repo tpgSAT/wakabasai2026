@@ -1,0 +1,252 @@
+---
+import Layout from '@layouts/Layout.astro';
+import { Image } from 'astro:assets';
+import landingBg from '@assets/landing_bg.png';
+import wakabasaiLogo from '@assets/wakabasai_logo.svg';
+---
+
+<Layout title="Coming Soon">
+  <main class="cs-root">
+    <Image src={landingBg} alt="" class="cs-bg" />
+    <div class="cs-overlay"></div>
+
+    <div class="cs-content">
+      <Image src={wakabasaiLogo} alt="若葉祭 2026" class="cs-logo" />
+
+      <p class="cs-label">COMING SOON</p>
+
+      <p class="cs-date">
+        4.10 <span>fri</span> &ndash; 4.11 <span>sat</span>
+      </p>
+
+      <div class="cs-countdown" id="countdown">
+        <div class="cs-unit">
+          <span class="cs-num" id="cd-days">--</span>
+          <span class="cs-unit-label">DAYS</span>
+        </div>
+        <div class="cs-sep">:</div>
+        <div class="cs-unit">
+          <span class="cs-num" id="cd-hours">--</span>
+          <span class="cs-unit-label">HOURS</span>
+        </div>
+        <div class="cs-sep">:</div>
+        <div class="cs-unit">
+          <span class="cs-num" id="cd-mins">--</span>
+          <span class="cs-unit-label">MINS</span>
+        </div>
+        <div class="cs-sep">:</div>
+        <div class="cs-unit">
+          <span class="cs-num" id="cd-secs">--</span>
+          <span class="cs-unit-label">SECS</span>
+        </div>
+      </div>
+
+      <p class="cs-message">現在、サイトを準備中です。公開までしばらくお待ちください。</p>
+
+      <div class="cs-sns">
+        <a href="https://x.com/tpgardener" target="_blank" rel="noopener noreferrer" aria-label="X (Twitter)">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="22" height="22">
+            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.747l7.73-8.835L2.019 2.25H8.08l4.253 5.622L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77z"/>
+          </svg>
+          <span>@tpgardener</span>
+        </a>
+        <a href="https://www.instagram.com/taki_plaza_gardener" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="22" height="22">
+            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/>
+          </svg>
+          <span>taki_plaza_gardener</span>
+        </a>
+        <a href="https://www.tpgd.jp/" target="_blank" rel="noopener noreferrer" aria-label="TPG公式サイト">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="22" height="22">
+            <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.22.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+          </svg>
+          <span>tpgd.jp</span>
+        </a>
+      </div>
+    </div>
+  </main>
+</Layout>
+
+<script>
+  const target = new Date('2026-04-10T00:00:00+09:00').getTime();
+
+  function pad(n: number) {
+    return String(n).padStart(2, '0');
+  }
+
+  function tick() {
+    const diff = target - Date.now();
+    if (diff <= 0) {
+      document.getElementById('countdown')!.style.display = 'none';
+      return;
+    }
+    const days  = Math.floor(diff / 86400000);
+    const hours = Math.floor((diff % 86400000) / 3600000);
+    const mins  = Math.floor((diff % 3600000)  / 60000);
+    const secs  = Math.floor((diff % 60000)    / 1000);
+    document.getElementById('cd-days')!.textContent  = String(days);
+    document.getElementById('cd-hours')!.textContent = pad(hours);
+    document.getElementById('cd-mins')!.textContent  = pad(mins);
+    document.getElementById('cd-secs')!.textContent  = pad(secs);
+  }
+
+  tick();
+  setInterval(tick, 1000);
+</script>
+
+<style>
+  .cs-root {
+    position: relative;
+    width: 100vw;
+    min-height: 100dvh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    font-family: 'Noto Sans JP Variable', 'Noto Sans JP', sans-serif;
+  }
+
+  .cs-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    z-index: 0;
+  }
+
+  .cs-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.55);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    z-index: 1;
+  }
+
+  .cs-content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    padding: 3rem 2rem;
+    text-align: center;
+  }
+
+  .cs-logo {
+    width: clamp(200px, 44vw, 340px);
+    height: auto;
+    margin-bottom: 1.5rem;
+  }
+
+  .cs-label {
+    font-size: clamp(0.6rem, 1.5vw, 0.75rem);
+    letter-spacing: 0.45em;
+    color: #666;
+    font-weight: 500;
+    margin: 0 0 1.25rem;
+    text-transform: uppercase;
+  }
+
+  .cs-date {
+    font-size: clamp(1.1rem, 3vw, 1.5rem);
+    font-weight: 600;
+    color: #1a1a1a;
+    letter-spacing: 0.12em;
+    margin: 0 0 2rem;
+  }
+
+  .cs-date span {
+    font-size: 0.72em;
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    opacity: 0.65;
+  }
+
+  /* Countdown */
+  .cs-countdown {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .cs-unit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 3.5rem;
+  }
+
+  .cs-num {
+    font-size: clamp(2rem, 6vw, 3rem);
+    font-weight: 700;
+    line-height: 1;
+    color: #1a1a1a;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+  }
+
+  .cs-unit-label {
+    font-size: 0.55rem;
+    letter-spacing: 0.2em;
+    color: #888;
+    font-weight: 500;
+    margin-top: 0.3rem;
+  }
+
+  .cs-sep {
+    font-size: clamp(1.8rem, 5vw, 2.6rem);
+    font-weight: 300;
+    color: #aaa;
+    line-height: 1;
+    padding-top: 0.05em;
+    align-self: flex-start;
+  }
+
+  .cs-message {
+    font-size: clamp(0.75rem, 2vw, 0.875rem);
+    color: #555;
+    letter-spacing: 0.06em;
+    line-height: 1.8;
+    margin: 0 0 2.25rem;
+    max-width: 400px;
+  }
+
+  /* SNS */
+  .cs-sns {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    width: 100%;
+    max-width: 260px;
+  }
+
+  .cs-sns a {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.6rem 1rem;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    text-decoration: none;
+    color: #1a1a1a;
+    font-size: 0.8rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    transition: background 0.15s, transform 0.15s;
+  }
+
+  .cs-sns a:hover {
+    background: rgba(255, 255, 255, 0.95);
+    transform: translateY(-1px);
+  }
+
+  .cs-sns a svg {
+    flex-shrink: 0;
+  }
+</style>
