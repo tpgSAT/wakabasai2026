@@ -5,3 +5,13 @@
     line-height: 191%;
     letter-spacing: 0.96px;
 }
+
+@media screen and (min-width: 767px) {
+    .text-body {
+    font-size: 15px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 200%;
+    letter-spacing: 0.96px;
+}
+}
