@@ -12,11 +12,15 @@ interface Booth {
 export type { Booth };
 
 import sampleBoothImg from '@assets/booth/booth_sample.jpg';
+import circleBoothImg from '@assets/booth/circle_booth.jpg';
+import workshopImg from '@assets/booth/workshop.jpg';
+import stageImg from '@assets/booth/stage.jpg';
+import tableTennisImg from '@assets/booth/table_tennis.jpg';
 
 export const boothData: Booth[] = [
     {
         boothType: 'サークル新歓企画',
-        boothImg: sampleBoothImg,
+        boothImg: circleBoothImg,
         boothTitle: 'サークルブース',
         boothDescription: '学内最大級の合同新歓イベントならでは！40近くの公認・非公認サークルが一挙に会します',
         boothLocation: ['Taki Plaza 2F', 'Taki Plaza B2F'],
@@ -26,7 +30,7 @@ export const boothData: Booth[] = [
     },
     {
         boothType: 'サークル新歓企画',
-        boothImg: sampleBoothImg,
+        boothImg: workshopImg,
         boothTitle: 'ワークショップ',
         boothDescription: '主にものつくり系の団体によるワークショップ形式のイベントが楽しめます！',
         boothLocation: ['Taki Plaza 2F'],
@@ -36,7 +40,7 @@ export const boothData: Booth[] = [
     },
     {
         boothType: 'サークル新歓企画',
-        boothImg: sampleBoothImg,
+        boothImg: stageImg,
         boothTitle: 'トーク・ステージ企画',
         boothDescription: 'サークルの活動内容をより深く知ることができるトークや、ステージでのパフォーマンスが楽しめます！',
         boothLocation: ['70周年記念講堂', 'Taki Plaza 外階段'],
@@ -66,7 +70,7 @@ export const boothData: Booth[] = [
     },
     {
         boothType: 'TPG企画',
-        boothImg: sampleBoothImg,
+        boothImg: tableTennisImg,
         boothTitle: 'キムワイプ卓球',
         boothDescription: '理系なら一度はやってみたい！？キムワイプを使って卓球をしよう！',
         boothLocation: ['Taki Plaza B1F'],
