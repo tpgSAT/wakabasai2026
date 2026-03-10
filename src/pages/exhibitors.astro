@@ -2,6 +2,9 @@
 import Layout from '@layouts/Layout.astro';
 import PageTitle from '@components/PageTitle.astro';
 import Section from '@components/layout/Section.astro';
+import ExhibitorsCard from '@components/ExhibitorsCard.astro';
+
+import {exhibitorsData} from '@lib/exhibitors';
 
 import exhibitorsTitleSVG from '@assets/exhibitors/title.svg';
 ---
@@ -10,4 +13,19 @@ import exhibitorsTitleSVG from '@assets/exhibitors/title.svg';
         <PageTitle titleSVG={exhibitorsTitleSVG} />
         <p class="text-body">若葉祭2026に出展する部活・サークルの一覧です。それぞれの企画については<a href="/#booth">こちら</a>をご確認ください。</p>
     </Section>
+    <Section>
+        <div class="exhibitor-grid">
+            {exhibitorsData.map((exhibitor, index) => (
+                <ExhibitorsCard key={index} {...exhibitor} />
+            ))}
+        </div>
+    </Section>
 </Layout>
+
+<style>
+    .exhibitor-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 0 20px;
+    }
+</style>
