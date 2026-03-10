@@ -1,0 +1,13 @@
+---
+import Layout from '@layouts/Layout.astro';
+import PageTitle from '@components/PageTitle.astro';
+import Section from '@components/layout/Section.astro';
+
+import exhibitorsTitleSVG from '@assets/exhibitors/title.svg';
+---
+<Layout title="出展団体一覧">
+    <Section>
+        <PageTitle titleSVG={exhibitorsTitleSVG} />
+        <p class="text-body">若葉祭2026に出展する部活・サークルの一覧です。それぞれの企画については<a href="/#booth">こちら</a>をご確認ください。</p>
+    </Section>
+</Layout>
