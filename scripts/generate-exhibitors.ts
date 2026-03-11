@@ -27,6 +27,8 @@ async function download(url: string, file: string) {
 async function run() {
 
   const rows = await csv().fromFile(CSV)
+  const total = rows.length
+  console.log(`📋 ${total} 件の出展者を処理します`)
 
   if (!fs.existsSync(ASSETS)) fs.mkdirSync(ASSETS, { recursive: true })
 
@@ -34,6 +36,8 @@ async function run() {
   const items: string[] = []
 
   for (const [idx, r] of rows.entries()) {
+    const prefix = `[${idx + 1}/${total}] ${r.exhibitor_name}`
+    process.stdout.write(`${prefix} ...`)
 
     const base = `exhibitor${idx}`
 
@@ -60,7 +64,10 @@ async function run() {
       }
     }
 
-    if (!logoVar) throw new Error(`Missing logo for exhibitor: ${r.exhibitor_name}`)
+    if (!logoVar) throw new Error(`\nロゴがありません: ${r.exhibitor_name}`)
+
+    const photoStatus = photoVar ? "📸" : "  "
+    process.stdout.write(` ✅ ロゴ ${photoStatus}\n`)
 
     items.push(`
 {
@@ -69,7 +76,7 @@ async function run() {
   exhibitorIcon: ${logoVar},
   exhibitorPhoto: ${photoVar || null},
   booths: [${r.booth ? r.booth.split(",").map((b: string) => `"${b.trim()}"`).join(", ") : ""}],
-  days: ${JSON.stringify(parseDays(r.event_days))}
+  days: ${JSON.stringify(parseDays(r.event_days))},
   xLink: ${r.x_link ? `"${r.x_link}"` : null},
   instagramLink: ${r.instagram_link ? `"${r.instagram_link}"` : null},
   youtubeLink: ${r.youtube_link ? `"${r.youtube_link}"` : null},
@@ -105,6 +112,7 @@ ${items.join(",")}
 `
 
   fs.writeFileSync(OUTPUT, ts)
+  console.log(`\n✨ ${OUTPUT} を生成しました（${total} 件）`)
 }
 
 run()
