@@ -15,18 +15,21 @@ import exhibitorsTitleSVG from '@assets/exhibitors/title.svg';
     </Section>
     <Section>
         <div class="filter-bar">
-            <div class="filter-group">
+            <div class="filter-group filter-day">
                 <span class="filter-label">開催日</span>
-                <button class="filter-btn active" data-filter="day" data-value="all">すべて</button>
-                <button class="filter-btn" data-filter="day" data-value="4/10">4/10</button>
-                <button class="filter-btn" data-filter="day" data-value="4/11">4/11</button>
+                <div class="filter-btn-wrapper">
+                    <button class="filter-btn active" data-filter="day" data-value="4/10">4/10(金)</button>
+                    <button class="filter-btn" data-filter="day" data-value="4/11">4/11(土)</button>
+                </div>
             </div>
-            <div class="filter-group">
+            <div class="filter-group filter-booth">
                 <span class="filter-label">企画種別</span>
-                <button class="filter-btn active" data-filter="booth" data-value="all">すべて</button>
-                <button class="filter-btn" data-filter="booth" data-value="サークルブース">サークルブース</button>
-                <button class="filter-btn" data-filter="booth" data-value="ワークショップ">ワークショップ</button>
-                <button class="filter-btn" data-filter="booth" data-value="ステージ企画">ステージ企画</button>
+                <div class="filter-btn-wrapper">
+                    <button class="filter-btn active" data-filter="booth" data-value="all">すべて</button>
+                    <button class="filter-btn" data-filter="booth" data-value="サークルブース">サークルブース</button>
+                    <button class="filter-btn" data-filter="booth" data-value="ワークショップ">ワークショップ</button>
+                    <button class="filter-btn" data-filter="booth" data-value="ステージ企画">ステージ企画</button>
+                </div>
             </div>
         </div>
         <div class="exhibitor-grid">
@@ -41,7 +44,7 @@ import exhibitorsTitleSVG from '@assets/exhibitors/title.svg';
 
 <script>
     const buttons = document.querySelectorAll<HTMLButtonElement>('.filter-btn');
-    let activeDay = 'all';
+    let activeDay = '4/10';
     let activeBooth = 'all';
 
     function applyFilters() {
@@ -69,6 +72,8 @@ import exhibitorsTitleSVG from '@assets/exhibitors/title.svg';
             applyFilters();
         });
     });
+
+    applyFilters();
 </script>
 
 <style>
@@ -79,25 +84,41 @@ import exhibitorsTitleSVG from '@assets/exhibitors/title.svg';
         margin-bottom: 24px;
     }
 
-    .filter-group {
+    .filter-day {
+        gap: 0px;
+    }
+
+    .filter-day .filter-btn {
+        width: 50%;
+    }
+
+    .filter-bar .filter-label{
+        font-size: 15px;
+        font-weight: 700;
+        letter-spacing: 0.96px;
+    }
+
+    .filter-day .filter-btn-wrapper {
+        margin-top: 8px;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0px;
+    }
+
+    .filter-booth .filter-btn-wrapper {
+        margin-top: 8px;
         display: flex;
         flex-wrap: wrap;
         align-items: center;
         gap: 8px;
     }
 
-    .filter-label {
-        font-size: 12px;
-        font-weight: 700;
-        letter-spacing: 0.96px;
-        min-width: 4em;
-    }
-
     .filter-btn {
-        padding: 4px 12px;
-        font-size: 12px;
+        padding: 8px 12px;
+        font-size: 14px;
         font-family: inherit;
-        font-weight: 500;
+        font-weight: 700;
         letter-spacing: 0.96px;
         border: 1.5px solid var(--wakabasai-red);
         background: transparent;
