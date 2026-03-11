@@ -6,13 +6,19 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "generate:exhibitors": "tsx scripts/generate-exhibitors.ts"
   },
   "dependencies": {
     "@astrojs/partytown": "^2.1.4",
     "@astrojs/sitemap": "^3.7.0",
     "@fontsource-variable/noto-sans-jp": "^5.2.10",
     "astro": "^5.17.1",
-    "astro-seo": "^1.1.0"
+    "astro-seo": "^1.1.0",
+    "axios": "^1.13.6",
+    "csvtojson": "^2.0.14"
+  },
+  "devDependencies": {
+    "tsx": "^4.21.0"
   }
 }

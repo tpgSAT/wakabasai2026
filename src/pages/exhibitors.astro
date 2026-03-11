@@ -4,7 +4,7 @@ import PageTitle from '@components/PageTitle.astro';
 import Section from '@components/layout/Section.astro';
 import ExhibitorsCard from '@components/ExhibitorsCard.astro';
 
-import {exhibitorsData} from '@lib/exhibitors';
+import {exhibitors} from '@lib/exhibitors';
 
 import exhibitorsTitleSVG from '@assets/exhibitors/title.svg';
 ---
@@ -15,7 +15,7 @@ import exhibitorsTitleSVG from '@assets/exhibitors/title.svg';
     </Section>
     <Section>
         <div class="exhibitor-grid">
-            {exhibitorsData.map((exhibitor, index) => (
+            {exhibitors.map((exhibitor, index) => (
                 <ExhibitorsCard key={index} {...exhibitor} />
             ))}
         </div>

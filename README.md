@@ -1,43 +1,40 @@
-# Astro Starter Kit: Minimal
+# 若葉祭2026 公式サイト
 
-```sh
-npm create astro@latest -- --template minimal
-```
+[Astro](https://astro.build) で構築された若葉祭2026の静的イベントサイトです。
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
-
-## 🚀 Project Structure
-
-Inside of your Astro project, you'll see the following folders and files:
+## 🚀 プロジェクト構成
 
 ```text
 /
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
+├── public/             # そのまま配信されるファイル（favicon、OG画像など）
+├── data/               # CSVなどの元データ
+├── scripts/            # データ生成スクリプト
+└── src/
+    ├── assets/         # 画像・フォントなどの静的アセット
+    ├── components/     # 再利用可能な Astro コンポーネント
+    ├── layouts/        # ページレイアウト
+    ├── lib/            # ユーティリティ関数・データ定義
+    └── pages/          # ファイルベースルーティング
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+## 🧞 コマンド一覧
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+プロジェクトルートでターミナルから実行してください：
 
-Any static assets, like images, can be placed in the `public/` directory.
+| コマンド                           | 内容                                                 |
+| :--------------------------------- | :--------------------------------------------------- |
+| `npm install`                      | 依存パッケージをインストール                         |
+| `npm run dev`                      | `localhost:4321` でローカル開発サーバーを起動        |
+| `npm run build`                    | 本番用サイトを `./dist/` にビルド                    |
+| `npm run preview`                  | デプロイ前にビルド結果をローカルでプレビュー         |
+| `npm run generate:exhibitors`      | 出展者データ（CSV）から `src/lib/exhibitors.ts` を生成 |
 
-## 🧞 Commands
+## 📋 出展者データの生成
 
-All commands are run from the root of the project, from a terminal:
+出展者データはCSVから自動生成されます。`data/` ディレクトリにCSVを配置してから実行してください：
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+```sh
+npm run generate:exhibitors
+```
 
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+Google Drive の画像URLを解決してダウンロードし、`src/assets/exhibitors/` に保存したうえで `src/lib/exhibitors.ts` を生成します。
