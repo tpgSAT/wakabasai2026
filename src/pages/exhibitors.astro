@@ -47,6 +47,25 @@ import exhibitorsTitleSVG from '@assets/exhibitors/title.svg';
     let activeDay = '4/10';
     let activeBooth = 'all';
 
+    // Shuffle once per session, restore on subsequent visits
+    const grid = document.querySelector('.exhibitor-grid')!;
+    const cards = Array.from(grid.querySelectorAll<HTMLElement>('.exhibitor-wrapper'));
+    const SESSION_KEY = 'exhibitor-order';
+    const stored = sessionStorage.getItem(SESSION_KEY);
+
+    if (stored) {
+        const order: number[] = JSON.parse(stored);
+        order.forEach(i => grid.appendChild(cards[i]));
+    } else {
+        const indices = cards.map((_, i) => i);
+        for (let i = indices.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [indices[i], indices[j]] = [indices[j], indices[i]];
+        }
+        sessionStorage.setItem(SESSION_KEY, JSON.stringify(indices));
+        indices.forEach(i => grid.appendChild(cards[i]));
+    }
+
     function applyFilters() {
         document.querySelectorAll<HTMLElement>('.exhibitor-wrapper').forEach(card => {
             const days = card.dataset.days?.split(',') ?? [];
