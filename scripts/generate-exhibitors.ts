@@ -3,7 +3,7 @@ import fs from "fs"
 import axios from "axios"
 import path from "path"
 
-const CSV = "data/exhibitors_0311.csv"
+const CSV = "data/exhibitors_0312.csv"
 const ASSETS = "src/assets/exhibitors"
 const OUTPUT = "src/lib/exhibitors.ts"
 
@@ -19,9 +19,23 @@ function driveToDirect(url?: string) {
   return `https://drive.google.com/uc?export=download&id=${m[1]}`
 }
 
-async function download(url: string, file: string) {
+const MIME_TO_EXT: Record<string, string> = {
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+  "image/gif": "gif",
+  "image/avif": "avif",
+  "image/heic": "heic",
+  "image/heif": "heif",
+}
+
+async function download(url: string, filePath: string): Promise<string> {
   const res = await axios.get(url, { responseType: "arraybuffer" })
-  fs.writeFileSync(file, res.data)
+  const mime = (res.headers["content-type"] as string | undefined)?.split(";")[0].trim() ?? ""
+  const ext = MIME_TO_EXT[mime] ?? (path.extname(filePath).slice(1) || "jpg")
+  const finalPath = filePath.replace(/\.[^.]+$/, `.${ext}`)
+  fs.writeFileSync(finalPath, res.data)
+  return path.basename(finalPath)
 }
 
 async function run() {
@@ -47,8 +61,7 @@ async function run() {
     if (r.exhibitor_logo) {
       const url = driveToDirect(r.exhibitor_logo)
       if (url) {
-        const file = `${base}_logo.jpg`
-        await download(url, path.join(ASSETS, file))
+        const file = await download(url, path.join(ASSETS, `${base}_logo.jpg`))
         logoVar = `${base}Logo`
         imports.push(`import ${logoVar} from '@assets/exhibitors/${file}';`)
       }
@@ -57,8 +70,7 @@ async function run() {
     if (r.exhibitor_photo) {
       const url = driveToDirect(r.exhibitor_photo)
       if (url) {
-        const file = `${base}_photo.jpg`
-        await download(url, path.join(ASSETS, file))
+        const file = await download(url, path.join(ASSETS, `${base}_photo.jpg`))
         photoVar = `${base}Photo`
         imports.push(`import ${photoVar} from '@assets/exhibitors/${file}';`)
       }

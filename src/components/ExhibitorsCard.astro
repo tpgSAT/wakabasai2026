@@ -34,10 +34,15 @@ const shortDescription = isLong ? exhibitorDescription.slice(0, LIMIT) + "…" :
             ))}
         </div>
         <p class="text-body description-short">{shortDescription}</p>
-        {isLong && (
+        {(isLong || exhibitorPhoto)&& (
             <>
-                <p class="text-body description-full" hidden>{exhibitorDescription}</p>
-                <Button text="詳細を見る" style="outlined" class="details-btn" />
+             <div class="description-full" hidden>
+                {exhibitorPhoto && (
+                    <Image src={exhibitorPhoto} alt={`${exhibitorName}の写真`} class="exhibitor-photo" />
+                )}
+                <p class="text-body">{exhibitorDescription}</p>
+            </div>
+            <Button text="詳細を見る" style="outlined" class="details-btn" />
             </>
         )}
     </div>
@@ -127,5 +132,12 @@ const shortDescription = isLong ? exhibitorDescription.slice(0, LIMIT) + "…" :
 
     .details-btn {
         align-self: flex-start;
+    }
+
+    .exhibitor-photo {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        margin-bottom: 8px;
     }
 </style>
