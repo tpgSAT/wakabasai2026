@@ -1,11 +1,16 @@
 ---
 import type { exhibitor } from "@lib/exhibitors";
 import { Image } from "astro:assets";
+import Button from "@components/Button.astro";
 
 import xIcon from "@assets/exhibitors/x.svg";
 import instagramIcon from "@assets/exhibitors/instagram.svg";
 
 const { exhibitorName, exhibitorDescription, exhibitorIcon, exhibitorPhoto, booths, xLink, instagramLink, youtubeLink, websiteLink } = Astro.props as exhibitor;
+
+const LIMIT = 40;
+const isLong = exhibitorDescription.length > LIMIT;
+const shortDescription = isLong ? exhibitorDescription.slice(0, LIMIT) + "…" : exhibitorDescription;
 ---
 <div class="exhibitor-card">
     <div class="exhibitor-header">
@@ -28,9 +33,28 @@ const { exhibitorName, exhibitorDescription, exhibitorIcon, exhibitorPhoto, boot
                 <p key={index} class="booth-tag">{booth}</p>
             ))}
         </div>
-        <p class="text-body">{exhibitorDescription}</p>
+        <p class="text-body description-short">{shortDescription}</p>
+        {isLong && (
+            <>
+                <p class="text-body description-full" hidden>{exhibitorDescription}</p>
+                <Button text="詳細を見る" style="outlined" class="details-btn" />
+            </>
+        )}
     </div>
 </div>
+
+<script>
+    document.querySelectorAll('.details-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const card = btn.closest('.exhibitor-card')!;
+            const short = card.querySelector('.description-short') as HTMLElement;
+            const full = card.querySelector('.description-full') as HTMLElement;
+            const isExpanded = !full.hidden;
+            full.hidden = isExpanded;
+            short.hidden = !isExpanded;
+            btn.textContent = isExpanded ? '詳細を見る' : '閉じる';
+        });
+    });</script>
 
 <style>
     .exhibitor-card {
@@ -99,5 +123,9 @@ const { exhibitorName, exhibitorDescription, exhibitorIcon, exhibitorPhoto, boot
         padding: 4px 8px;
         margin: 0;
         font-size: 12px;
+    }
+
+    .details-btn {
+        align-self: flex-start;
     }
 </style>
