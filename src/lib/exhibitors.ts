@@ -539,7 +539,7 @@ export const exhibitors: exhibitor[] = [
   booths: ["サークルブース"],
   days: ["4/10","4/11"],
   xLink: "https://x.com/scitokyo_rfc",
-  instagramLink: "https://www.instagram.com/scitokyo_rfc_2025",
+  instagramLink: "https://www.instagram.com/scitokyo_rfc_2026",
   youtubeLink: null,
   websiteLink: "https://sciencetokyo-rfc.site/"
 }

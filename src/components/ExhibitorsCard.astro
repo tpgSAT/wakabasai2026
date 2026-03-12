@@ -30,7 +30,7 @@ const shortDescription = isLong ? exhibitorDescription.slice(0, LIMIT) + "…" :
         <h3>{exhibitorName}</h3>
         <div class="booth-wrapper">
             {booths.map((booth, index) => (
-                <p key={index} class="booth-tag">{booth}</p>
+                <p class="booth-tag">{booth}</p>
             ))}
         </div>
         <p class="text-body description-short">{shortDescription}</p>
