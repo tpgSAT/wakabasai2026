@@ -68,6 +68,7 @@ import exhibitor34Logo from '@assets/exhibitors/exhibitor34_logo.jpg';
 import exhibitor34Photo from '@assets/exhibitors/exhibitor34_photo.jpg';
 import exhibitor35Logo from '@assets/exhibitors/exhibitor35_logo.jpg';
 import exhibitor36Logo from '@assets/exhibitors/exhibitor36_logo.png';
+import exhibitor36Photo from '@assets/exhibitors/exhibitor36_photo.jpg';
 
 type BoothType = "サークルブース" | "ワークショップ" | "ステージ企画";
 
@@ -278,7 +279,7 @@ export const exhibitors: exhibitor[] = [
   exhibitorPhoto: exhibitor14Photo,
   booths: ["サークルブース"],
   days: ["4/11"],
-  xLink: "https://x.com/2024fscshinkan",
+  xLink: "https://x.com/fscshinkan2026",
   instagramLink: "https://www.instagram.com/fsc_folksong",
   youtubeLink: null,
   websiteLink: null
@@ -343,8 +344,8 @@ export const exhibitors: exhibitor[] = [
   exhibitorPhoto: exhibitor19Photo,
   booths: ["サークルブース", "ステージ企画"],
   days: ["4/10","4/11"],
-  xLink: "https://x.com/2026_kleines",
-  instagramLink: "https://www.instagram.com/2026_kleines",
+  xLink: "https://x.com/chorkleines_wlc",
+  instagramLink: "https://www.instagram.com/chorkleines_wlc",
   youtubeLink: "http://www.youtube.com/@chor-kleines",
   websiteLink: "https://www.chorkleines.com/"
 }
@@ -539,7 +540,7 @@ export const exhibitors: exhibitor[] = [
   booths: ["サークルブース"],
   days: ["4/10","4/11"],
   xLink: "https://x.com/scitokyo_rfc",
-  instagramLink: "https://www.instagram.com/scitokyo_rfc_2026",
+  instagramLink: "https://www.instagram.com/scitokyo_rfc_2025",
   youtubeLink: null,
   websiteLink: "https://sciencetokyo-rfc.site/"
 }
@@ -561,7 +562,7 @@ export const exhibitors: exhibitor[] = [
   exhibitorName: "Taki Plaza Gardener",
   exhibitorDescription: "Taki Plaza gardener (通称TPG)はTaki Plazaを学生主体で企画・運営し、学生の交流を促す目的で活動している公認学生団体です。メンバー同士の交流も活発で学年や所属を超えた繋がりができます！イベントを企画してみたい人、大学で新しい繋がりが欲しい人にはぴったりな団体です！！",
   exhibitorIcon: exhibitor36Logo,
-  exhibitorPhoto: null,
+  exhibitorPhoto: exhibitor36Photo,
   booths: ["サークルブース"],
   days: ["4/10","4/11"],
   xLink: "https://x.com/TPGardener/",

@@ -3,7 +3,7 @@ import fs from "fs"
 import axios from "axios"
 import path from "path"
 
-const CSV = "data/exhibitors_0312.csv"
+const CSV = "data/exhibitors_0313.csv"
 const ASSETS = "src/assets/exhibitors"
 const OUTPUT = "src/lib/exhibitors.ts"
 
