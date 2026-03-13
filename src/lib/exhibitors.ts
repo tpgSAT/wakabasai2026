@@ -121,7 +121,7 @@ export const exhibitors: exhibitor[] = [
   exhibitorDescription: "ボート部では、初心者から経験者まで楽しめる環境を提供しています。様々な種類のボートを漕いで仲間と共に成長し、達成感を味わえる充実した学生生活を送れます。興味のある方はぜひご参加ください！",
   exhibitorIcon: exhibitor2Logo,
   exhibitorPhoto: exhibitor2Photo,
-  booths: ["サークルブース"],
+  booths: ["サークルブース", "ワークショップ"],
   days: ["4/10","4/11"],
   xLink: "https://x.com/st_rowing2026",
   instagramLink: "https://www.instagram.com/sciencetokyo_boat2026",
