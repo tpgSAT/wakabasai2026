@@ -1,0 +1,46 @@
+---
+interface Props {
+    text: string;
+    href?: string;
+    class?: string;
+    style?: "filled" | "outlined";
+}
+
+const { text, href, class: className, style = "filled" } = Astro.props as Props;
+---
+{href
+    ? <a class:list={["btn", style, className]} href={href}>{text}</a>
+    : <button class:list={["btn", style, className]}>{text}</button>
+}
+
+<style>
+    .btn {
+        display: inline-block;
+        width: 100%;
+        text-align: center;
+        box-sizing: border-box;
+        padding: 8px 12px;
+        margin-top: 10px;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+        font-family: inherit;
+
+        font-size: 14px;
+        font-style: normal;
+        font-weight: 500;
+        line-height: 191%;
+        letter-spacing: 0.96px;
+    }
+
+    .btn.filled {
+        color: #fff;
+        background-color: var(--wakabasai-red);
+    }
+
+    .btn.outlined {
+        background: transparent;
+        border: 1.5px solid var(--wakabasai-red);
+        color: var(--wakabasai-red);
+    }
+</style>

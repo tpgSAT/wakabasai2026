@@ -1,0 +1,28 @@
+---
+import type { ImageMetadata } from 'astro'
+import { Image } from 'astro:assets';
+
+interface Props {
+  titleSVG: ImageMetadata;
+  alt?: string;
+}
+
+const { titleSVG, alt = "セクションタイトル" } = Astro.props as Props;
+---
+
+<div class="section-title">
+  <Image src={titleSVG} alt={alt} />
+</div>
+
+<style>
+  .section-title {
+    display: inline-block;
+    height: clamp(40px, 20vw, 80px);
+    width: auto;
+  }
+
+  .section-title img {
+    height: 100%;
+    width: auto;
+  }
+</style>

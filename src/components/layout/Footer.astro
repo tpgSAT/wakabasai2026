@@ -1,0 +1,120 @@
+---
+
+import { Image } from 'astro:assets';
+import tpgLogo from '@assets/footer/tpg_logo.png';
+import wakabasaiLogo from '@assets/wakabasai_logo_inverted.svg';
+import iconX from '@assets/footer/icon_x.svg';
+import iconInstagram from '@assets/footer/icon_instagram.svg';
+import booth from '@assets/footer/booth.svg';
+import timetable from '@assets/footer/timetable.svg';
+import circles from '@assets/footer/circles.svg';
+import map from '@assets/footer/map.svg';
+import pamphlet from '@assets/footer/pamphlet.svg';
+---
+
+<footer>
+    <div class="wakabasai-footer">
+        <div class="wakabasai-footer-logo-wrapper">
+            <a href="https://wakabasai.tpgd.jp">
+                <Image src={wakabasaiLogo} alt="若葉祭2026" width="140" class="logo" />
+            </a>
+            <p class="text-body wakabasai-description">若葉祭は、Taki Plaza Gardener (TPG) が主催する学内最大規模のサークル合同新歓イベントです。</p>
+            <div class="wakabasai-nav">
+                <a href="/#booth"><Image class="booth" src={booth} alt="企画一覧" /></a>
+                <a href="/timetable"><Image class="timetable" src={timetable} alt="タイムテーブル" /></a>
+                <a href="/exhibiors"><Image class="circles" src={circles} alt="出展団体一覧" /></a>
+                <a href="/map"><Image class="map" src={map} alt="会場マップ" /></a>
+                <a href="/pamphlet"><Image class="pamphlet" src={pamphlet} alt="パンフレット" /></a>
+            </div>
+        </div>
+    </div>
+    <div class="tpg-footer">
+        <div id="tpg-footer-top-wrapper">
+            <a href="https://tpgd.jp">
+                <Image src={tpgLogo} alt="Taki Plaza Gardener" width="120" class="logo" />
+            </a>
+            <div id="social-media">
+                <a href="https://x.com/TPGardener/"><Image src={iconX} alt="X" /></a>
+                <a href="https://www.instagram.com/taki_plaza_gardener/"><Image src={iconInstagram} alt="Instagram"/></a>
+            </div>
+        </div>
+        <p class="text-body tpg-description">Taki Plaza Gardener(TPG)は、東京科学大学にあるHisao & Hiroko Taki Plazaにおいて、国際交流と学生支援の促進を目的に活動している公認学生団体です。</p>
+        <p class="text-body copyright">©︎ {new Date().getFullYear()} Taki Plaza Gardener All Rights Reserved.</p>
+    </div>
+</footer>
+
+<style>
+    footer {
+        width: 100%;
+    }
+
+    .wakabasai-footer {
+        width: 100%;
+        background-color: var(--wakabasai-red);
+        padding: 30px 8vw 20px;
+        box-sizing: border-box;
+    }
+
+    .wakabasai-description {
+        color: #FFF;
+        margin-top: 15px;
+        font-weight: 400;
+        font-size: 10px;
+    }
+
+    .wakabasai-nav {
+        display: grid;
+        grid-template-columns: 55% 45%;
+        grid-template-rows: repeat(3, 40px);
+        margin: 40px 0 0;
+    }
+
+    .wakabasai-nav .booth { grid-area: 1 / 1 / 2 / 2; }
+
+    .wakabasai-nav .timetable { grid-area: 2 / 1 / 3 / 2; }
+
+    .wakabasai-nav .circles { grid-area: 3 / 1 / 4 / 2; }
+
+    .wakabasai-nav .map { grid-area: 1 / 2 / 2 / 3; }
+
+    .wakabasai-nav .pamphlet { grid-area: 2 / 2 / 3 / 3; }
+
+    .tpg-footer {
+        width: 100%;
+        background-color: #1F1F1F;
+        padding: 20px 8vw;
+        box-sizing: border-box;
+    }
+
+    a {
+        text-decoration: none;
+    }
+
+    #tpg-footer-top-wrapper {
+        display: flex;
+        width: 100%;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin: 20px 0;
+    }
+
+    #social-media {
+        display: flex;
+        gap: 20px;
+    }
+
+    .tpg-description {
+        color: #FFF;
+        margin-top: 40px;
+        font-weight: 400;
+        font-size: 10px;
+    }
+
+    .copyright {
+        text-align: center;
+        color: #FFF;
+        margin-top: 40px;
+        font-weight: 400;
+        font-size: 11px;
+    }
+</style>
