@@ -1,0 +1,66 @@
+---
+import type { Event } from '@lib/timetable';
+
+type Props = {
+  event: Event;
+  style: string;
+  description: string;
+};
+
+const { event, style, description } = Astro.props as Props;
+---
+
+<button
+  type="button"
+  class="event-card js-event-card"
+  style={style}
+  data-event-name={event.eventName}
+  data-event-exhibitor={event.exhibitor}
+  data-event-time={`${event.startTime} - ${event.endTime}`}
+  data-event-description={description}
+>
+  <p class="event-name">{event.eventName}</p>
+  <p class="event-exhibitor">{event.exhibitor}</p>
+  <p class="event-time">{event.startTime} - {event.endTime}</p>
+</button>
+
+<style>
+  .event-card {
+    position: absolute;
+    box-sizing: border-box;
+    border: 1px solid #efd9d9;
+    border-radius: 10px;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(146, 18, 33, 0.06);
+    padding: 6px 8px;
+    overflow: hidden;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .event-card:hover {
+    border-color: var(--wakabasai-red);
+    box-shadow: 0 4px 12px rgba(146, 18, 33, 0.12);
+  }
+
+  .event-name {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.4;
+  }
+
+  .event-exhibitor {
+    margin: 3px 0 0;
+    font-size: 12px;
+    color: #6b5959;
+    line-height: 1.35;
+  }
+
+  .event-time {
+    margin: 4px 0 0;
+    font-size: 11px;
+    color: #8a7373;
+    line-height: 1.35;
+  }
+</style>

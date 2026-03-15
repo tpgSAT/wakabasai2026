@@ -2,6 +2,7 @@
 import Layout from '@layouts/Layout.astro';
 import Section from '@components/layout/Section.astro';
 import PageTitle from '@components/PageTitle.astro';
+import TimetableEventCard from '@components/TimetableEventCard.astro';
 import { eventData, type Event, type EventDay, type EventLocation } from '@lib/timetable';
 
 import titleSVG from '@assets/timetable/title.svg';
@@ -187,14 +188,11 @@ const dayTimetables: DayTimetable[] = dayOrder.map((day) => {
 
                 {track.events.length > 0 ? (
                   track.events.map((item) => (
-                    <article
-                      class="event-card"
+                    <TimetableEventCard
+                      event={item.event}
                       style={`top:${item.topPercent}%;height:${item.heightPercent}%;left:calc(${(item.lane * 100) / track.laneCount}% + 2px);width:calc(${100 / track.laneCount}% - 4px);`}
-                    >
-                      <p class="event-name">{item.event.eventName}</p>
-                      <p class="event-exhibitor">{item.event.exhibitor}</p>
-                      <p class="event-time">{item.event.startTime} - {item.event.endTime}</p>
-                    </article>
+                      description={`「${item.event.eventName}」の説明文（仮）です。詳細情報は現在準備中です。`}
+                    />
                   ))
                 ) : (
                   <p class="empty-track">-</p>
@@ -205,12 +203,25 @@ const dayTimetables: DayTimetable[] = dayOrder.map((day) => {
         </div>
       </div>
     ))}
+
+    <dialog id="event-modal" class="event-modal">
+      <article class="event-modal-card">
+        <button type="button" class="event-modal-close" data-modal-close aria-label="閉じる">×</button>
+        <h2 id="event-modal-title" class="event-modal-title"></h2>
+        <p id="event-modal-meta" class="event-modal-meta"></p>
+        <p id="event-modal-description" class="event-modal-description"></p>
+      </article>
+    </dialog>
   </Section>
 </Layout>
 
 <script>
   const dayButtons = document.querySelectorAll<HTMLButtonElement>('[data-filter="day"]');
   let activeDay = '4/10';
+  const eventModal = document.getElementById('event-modal') as HTMLDialogElement | null;
+  const eventModalTitle = document.getElementById('event-modal-title');
+  const eventModalMeta = document.getElementById('event-modal-meta');
+  const eventModalDescription = document.getElementById('event-modal-description');
 
   function applyDayFilter() {
     document.querySelectorAll<HTMLElement>('.day-timetable').forEach((table) => {
@@ -227,6 +238,25 @@ const dayTimetables: DayTimetable[] = dayOrder.map((day) => {
       button.classList.add('active');
       applyDayFilter();
     });
+  });
+
+  document.querySelectorAll<HTMLElement>('.js-event-card').forEach((card) => {
+    card.addEventListener('click', () => {
+      if (!eventModal || !eventModalTitle || !eventModalMeta || !eventModalDescription) {
+        return;
+      }
+      eventModalTitle.textContent = card.dataset.eventName ?? '';
+      eventModalMeta.textContent = `${card.dataset.eventExhibitor ?? ''} / ${card.dataset.eventTime ?? ''}`;
+      eventModalDescription.textContent = card.dataset.eventDescription ?? '';
+      eventModal.showModal();
+    });
+  });
+
+  eventModal?.addEventListener('click', (event) => {
+    const target = event.target as HTMLElement;
+    if (target === eventModal || target.closest('[data-modal-close]')) {
+      eventModal.close();
+    }
   });
 
   applyDayFilter();
@@ -286,6 +316,62 @@ const dayTimetables: DayTimetable[] = dayOrder.map((day) => {
     margin: 0 0 10px;
     font-size: 12px;
     color: #7c5f5f;
+  }
+
+  .event-modal {
+    border: none;
+    border-radius: 12px;
+    padding: 0;
+    width: min(560px, calc(100% - 32px));
+    background: transparent;
+  }
+
+  .event-modal::backdrop {
+    background: rgba(0, 0, 0, 0.45);
+  }
+
+  .event-modal-card {
+    position: relative;
+    margin: 0;
+    border-radius: 12px;
+    background: #fff;
+    border: 1px solid #efd9d9;
+    padding: 20px 20px 16px;
+  }
+
+  .event-modal-close {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 999px;
+    background: #f6eded;
+    color: #6b5959;
+    font-size: 20px;
+    cursor: pointer;
+  }
+
+  .event-modal-title {
+    margin: 0;
+    padding-right: 36px;
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.35;
+  }
+
+  .event-modal-meta {
+    margin: 8px 0 0;
+    color: #7b6666;
+    font-size: 14px;
+  }
+
+  .event-modal-description {
+    margin: 12px 0 0;
+    color: #3f3333;
+    font-size: 15px;
+    line-height: 1.6;
   }
 
   .timetable-grid {
@@ -380,38 +466,6 @@ const dayTimetables: DayTimetable[] = dayOrder.map((day) => {
     align-items: center;
     justify-content: center;
     color: #b7a8a8;
-  }
-
-  .event-card {
-    position: absolute;
-    box-sizing: border-box;
-    border: 1px solid #efd9d9;
-    border-radius: 10px;
-    background: #fff;
-    box-shadow: 0 2px 8px rgba(146, 18, 33, 0.06);
-    padding: 6px 8px;
-    overflow: hidden;
-  }
-
-  .event-name {
-    margin: 0;
-    font-size: 13px;
-    font-weight: 700;
-    line-height: 1.4;
-  }
-
-  .event-exhibitor {
-    margin: 3px 0 0;
-    font-size: 12px;
-    color: #6b5959;
-    line-height: 1.35;
-  }
-
-  .event-time {
-    margin: 4px 0 0;
-    font-size: 11px;
-    color: #8a7373;
-    line-height: 1.35;
   }
 
   @media (max-width: 720px) {
