@@ -34,9 +34,9 @@ type DayTimetable = {
 const workshopLocation: EventLocation = "Taki Plaza 2F ワークショップ";
 const dayOrder: EventDay[] = ["4/10", "4/11"];
 const locationOrder: EventLocation[] = [
-  "Taki Plaza B2F キッチン",
   "70周年記念講堂",
   "Taki Plaza 外階段",
+  "Taki Plaza B2F キッチン",
   workshopLocation,
 ];
 
@@ -78,6 +78,8 @@ const getMaxConcurrentEvents = (
   }
   return maxActive;
 };
+
+const getCircleId = (name: string) => `circle-${encodeURIComponent(name.trim())}`;
 
 const buildVenueTracks = (
   day: EventDay,
@@ -191,7 +193,8 @@ const dayTimetables: DayTimetable[] = dayOrder.map((day) => {
                     <TimetableEventCard
                       event={item.event}
                       style={`top:${item.topPercent}%;height:${item.heightPercent}%;left:calc(${(item.lane * 100) / track.laneCount}% + 2px);width:calc(${100 / track.laneCount}% - 4px);`}
-                      description={`「${item.event.eventName}」の説明文（仮）です。詳細情報は現在準備中です。`}
+                      description={item.event.description}
+                      circleLink={`/exhibitors#${getCircleId(item.event.exhibitor)}`}
                     />
                   ))
                 ) : (
@@ -210,6 +213,7 @@ const dayTimetables: DayTimetable[] = dayOrder.map((day) => {
         <h2 id="event-modal-title" class="event-modal-title"></h2>
         <p id="event-modal-meta" class="event-modal-meta"></p>
         <p id="event-modal-description" class="event-modal-description"></p>
+        <a id="event-modal-link" class="event-modal-link" href="/exhibitors">出展団体ページへ移動</a>
       </article>
     </dialog>
   </Section>
@@ -222,6 +226,7 @@ const dayTimetables: DayTimetable[] = dayOrder.map((day) => {
   const eventModalTitle = document.getElementById('event-modal-title');
   const eventModalMeta = document.getElementById('event-modal-meta');
   const eventModalDescription = document.getElementById('event-modal-description');
+  const eventModalLink = document.getElementById('event-modal-link') as HTMLAnchorElement | null;
 
   function applyDayFilter() {
     document.querySelectorAll<HTMLElement>('.day-timetable').forEach((table) => {
@@ -248,6 +253,9 @@ const dayTimetables: DayTimetable[] = dayOrder.map((day) => {
       eventModalTitle.textContent = card.dataset.eventName ?? '';
       eventModalMeta.textContent = `${card.dataset.eventExhibitor ?? ''} / ${card.dataset.eventTime ?? ''}`;
       eventModalDescription.textContent = card.dataset.eventDescription ?? '';
+      if (eventModalLink) {
+        eventModalLink.href = card.dataset.circleLink ?? '/exhibitors';
+      }
       eventModal.showModal();
     });
   });
@@ -372,6 +380,25 @@ const dayTimetables: DayTimetable[] = dayOrder.map((day) => {
     color: #3f3333;
     font-size: 15px;
     line-height: 1.6;
+  }
+
+  .event-modal-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 14px;
+    min-height: 40px;
+    padding: 0 14px;
+    border: 1.5px solid var(--wakabasai-red);
+    background: var(--wakabasai-red);
+    color: #fff;
+    font-weight: 700;
+    text-decoration: none;
+    border-radius: 0;
+  }
+
+  .event-modal-link:hover {
+    opacity: 0.9;
   }
 
   .timetable-grid {
