@@ -64,7 +64,7 @@ export const eventData: Event[] = [
         description: "",
         location: "70周年記念講堂",
         startTime: "19:00",
-        endTime: "19:45",
+        endTime: "20:00",
         days: ["4/10"],
     },
     {
@@ -163,7 +163,7 @@ export const eventData: Event[] = [
         description: "",
         location: "Taki Plaza 外階段",
         startTime: "15:00",
-        endTime: "15:45",
+        endTime: "16:00",
         days: ["4/11"],
     },
     {
