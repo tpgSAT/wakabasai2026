@@ -7,6 +7,8 @@ import ExhibitorsCard from '@components/ExhibitorsCard.astro';
 import {exhibitors} from '@lib/exhibitors';
 
 import exhibitorsTitleSVG from '@assets/exhibitors/title.svg';
+
+const getCircleId = (name: string) => `circle-${encodeURIComponent(name.trim())}`;
 ---
 <Layout title="出展団体一覧">
     <Section>
@@ -34,7 +36,7 @@ import exhibitorsTitleSVG from '@assets/exhibitors/title.svg';
         </div>
         <div class="exhibitor-grid">
             {exhibitors.map((exhibitor, index) => (
-                <div class="exhibitor-wrapper" data-days={exhibitor.days.join(",")} data-booths={exhibitor.booths.join(",")}>
+                <div id={getCircleId(exhibitor.exhibitorName)} class="exhibitor-wrapper" data-days={exhibitor.days.join(",")} data-booths={exhibitor.booths.join(",")}>
                     <ExhibitorsCard key={index} {...exhibitor} />
                 </div>
             ))}
@@ -44,7 +46,8 @@ import exhibitorsTitleSVG from '@assets/exhibitors/title.svg';
 
 <script>
     const buttons = document.querySelectorAll<HTMLButtonElement>('.filter-btn');
-    let activeDay = '4/10';
+    const urlParams = new URLSearchParams(window.location.search);
+    let activeDay = urlParams.get('day') ?? '4/10';
     let activeBooth = 'all';
 
     // Shuffle once per session, restore on subsequent visits
@@ -92,7 +95,26 @@ import exhibitorsTitleSVG from '@assets/exhibitors/title.svg';
         });
     });
 
+    const hashTargetId = window.location.hash.slice(1);
+    const hashTarget = hashTargetId ? document.getElementById(hashTargetId) as HTMLElement | null : null;
+    if (hashTarget && !urlParams.get('day')) {
+        const targetDays = hashTarget.dataset.days?.split(',') ?? [];
+        if (targetDays.includes('4/10')) {
+            activeDay = '4/10';
+        } else if (targetDays.includes('4/11')) {
+            activeDay = '4/11';
+        }
+    }
+
+    document.querySelectorAll<HTMLButtonElement>('[data-filter="day"]').forEach((button) => {
+        button.classList.toggle('active', button.dataset.value === activeDay);
+    });
+
     applyFilters();
+
+    if (hashTarget) {
+        hashTarget.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
 </script>
 
 <style>

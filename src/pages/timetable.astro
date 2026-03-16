@@ -1,4 +1,508 @@
 ---
-import ComingSoonLayout from '@layouts/ComingSoonLayout.astro';
+import Layout from '@layouts/Layout.astro';
+import Section from '@components/layout/Section.astro';
+import PageTitle from '@components/PageTitle.astro';
+import TimetableEventCard from '@components/TimetableEventCard.astro';
+import { eventData, type Event, type EventDay, type EventLocation } from '@lib/timetable';
+
+import titleSVG from '@assets/timetable/title.svg';
+
+type TimeSlot = {
+  startTime: Event["startTime"];
+  endTime: Event["endTime"];
+};
+
+type PositionedEvent = {
+  event: Event;
+  topPercent: number;
+  heightPercent: number;
+  lane: number;
+};
+
+type VenueTrack = {
+  location: EventLocation;
+  laneCount: number;
+  events: PositionedEvent[];
+};
+
+type DayTimetable = {
+  day: EventDay;
+  timeSlots: TimeSlot[];
+  tracks: VenueTrack[];
+};
+
+const workshopLocation: EventLocation = "Taki Plaza 2F ワークショップ";
+const dayOrder: EventDay[] = ["4/10", "4/11"];
+const locationOrder: EventLocation[] = [
+  "70周年記念講堂",
+  "Taki Plaza 外階段",
+  "Taki Plaza B2F キッチン",
+  workshopLocation,
+];
+
+const toMinutes = (time: Event["startTime"] | Event["endTime"]) => {
+  const [hour, minute] = time.split(":").map(Number);
+  return hour * 60 + minute;
+};
+
+const formatHour = (hour: number): Event["startTime"] =>
+  `${String(hour).padStart(2, "0")}:00` as Event["startTime"];
+
+const dayTimeRanges: Record<EventDay, { startHour: number; endHour: number }> = {
+  "4/10": { startHour: 16, endHour: 20 },
+  "4/11": { startHour: 10, endHour: 17 },
+};
+
+const buildTimeSlots = (startHour: number, endHour: number): TimeSlot[] =>
+  Array.from({ length: endHour - startHour }, (_, i) => ({
+    startTime: formatHour(startHour + i),
+    endTime: formatHour(startHour + i + 1),
+  }));
+
+const getMaxConcurrentEvents = (
+  events: { startMinutes: number; endMinutes: number }[]
+) => {
+  const points = events.flatMap((event) => [
+    { minute: event.startMinutes, delta: 1 },
+    { minute: event.endMinutes, delta: -1 },
+  ]);
+  points.sort((a, b) => a.minute - b.minute || a.delta - b.delta);
+
+  let active = 0;
+  let maxActive = 0;
+  for (const point of points) {
+    active += point.delta;
+    if (active > maxActive) {
+      maxActive = active;
+    }
+  }
+  return maxActive;
+};
+
+const getCircleId = (name: string) => `circle-${encodeURIComponent(name.trim())}`;
+
+const buildVenueTracks = (
+  day: EventDay,
+  dayStartMinutes: number,
+  dayEndMinutes: number,
+  dayDurationMinutes: number
+): VenueTrack[] =>
+  locationOrder.map((location) => {
+    const normalizedEvents = eventData
+      .filter((event) => event.location === location && event.days.includes(day))
+      .map((event) => {
+        const startMinutes = Math.max(toMinutes(event.startTime), dayStartMinutes);
+        const endMinutes = Math.min(toMinutes(event.endTime), dayEndMinutes);
+        return { event, startMinutes, endMinutes };
+      })
+      .filter((event) => event.endMinutes > event.startMinutes)
+      .sort(
+        (a, b) =>
+          a.startMinutes - b.startMinutes || a.endMinutes - b.endMinutes
+      );
+
+    const maxConcurrent = getMaxConcurrentEvents(normalizedEvents);
+    const laneCount =
+      location === workshopLocation
+        ? Math.max(2, maxConcurrent)
+        : Math.max(1, maxConcurrent);
+
+    const laneEndTimes = Array.from({ length: laneCount }, () => dayStartMinutes);
+    const events: PositionedEvent[] = normalizedEvents.map((item) => {
+      let lane = laneEndTimes.findIndex((laneEnd) => laneEnd <= item.startMinutes);
+      if (lane === -1) {
+        lane = 0;
+      }
+      laneEndTimes[lane] = item.endMinutes;
+
+      return {
+        event: item.event,
+        topPercent:
+          ((item.startMinutes - dayStartMinutes) / dayDurationMinutes) * 100,
+        heightPercent:
+          ((item.endMinutes - item.startMinutes) / dayDurationMinutes) * 100,
+        lane,
+      };
+    });
+
+    return { location, laneCount, events };
+  });
+
+const dayTimetables: DayTimetable[] = dayOrder.map((day) => {
+  const { startHour, endHour } = dayTimeRanges[day];
+  const dayStartMinutes = startHour * 60;
+  const dayEndMinutes = endHour * 60;
+  const dayDurationMinutes = dayEndMinutes - dayStartMinutes;
+
+  return {
+    day,
+    timeSlots: buildTimeSlots(startHour, endHour),
+    tracks: buildVenueTracks(day, dayStartMinutes, dayEndMinutes, dayDurationMinutes),
+  };
+});
 ---
-<ComingSoonLayout />
+
+<Layout title="タイムテーブル">
+  <Section>
+    <PageTitle titleSVG={titleSVG} />
+    <p class="text-body">
+      会場ごとの企画スケジュールです。
+    </p>
+  </Section>
+
+  <Section>
+    <div class="filter-bar">
+      <div class="filter-group filter-day">
+        <span class="filter-label">開催日</span>
+        <div class="filter-btn-wrapper">
+          <button class="filter-btn active" data-filter="day" data-value="4/10">4/10(金)</button>
+          <button class="filter-btn" data-filter="day" data-value="4/11">4/11(土)</button>
+        </div>
+      </div>
+    </div>
+
+    {dayTimetables.map((dayTable, index) => (
+      <div class="day-timetable" data-day={dayTable.day} style={index === 0 ? "" : "display:none"}>
+        <div class="timetable-wrap">
+          <p class="timetable-hint">※ 表は横にスクロールできます</p>
+
+          <div class="timetable-grid" style={`--slot-count:${dayTable.timeSlots.length};`}>
+            <div class="time-header">時間</div>
+            {dayTable.tracks.map((track) => (
+              <div class:list={["venue-header", track.location === workshopLocation && "venue-header-workshop"]}>
+                {track.location}
+              </div>
+            ))}
+
+            <div class="time-axis">
+              {dayTable.timeSlots.map((slot) => (
+                <div class="time-slot-label">{slot.startTime} - {slot.endTime}</div>
+              ))}
+            </div>
+
+            {dayTable.tracks.map((track) => (
+              <div class:list={["venue-track", track.location === workshopLocation && "venue-track-workshop"]}>
+                <div class="hour-lines">
+                  {dayTable.timeSlots.map(() => (
+                    <div class="hour-line"></div>
+                  ))}
+                </div>
+
+                {track.events.length > 0 ? (
+                  track.events.map((item) => (
+                    <TimetableEventCard
+                      event={item.event}
+                      style={`top:${item.topPercent}%;height:${item.heightPercent}%;left:calc(${(item.lane * 100) / track.laneCount}% + 2px);width:calc(${100 / track.laneCount}% - 4px);`}
+                      description={item.event.description}
+                      circleLink={`/exhibitors?day=${dayTable.day}#${getCircleId(item.event.exhibitor)}`}
+                    />
+                  ))
+                ) : (
+                  <p class="empty-track">-</p>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    ))}
+
+    <dialog id="event-modal" class="event-modal">
+      <article class="event-modal-card">
+        <button type="button" class="event-modal-close" data-modal-close aria-label="閉じる">×</button>
+        <h2 id="event-modal-title" class="event-modal-title"></h2>
+        <p id="event-modal-meta" class="event-modal-meta"></p>
+        <p id="event-modal-description" class="event-modal-description"></p>
+        <a id="event-modal-link" class="event-modal-link" href="/exhibitors">出展団体ページへ移動</a>
+      </article>
+    </dialog>
+  </Section>
+</Layout>
+
+<script>
+  const dayButtons = document.querySelectorAll<HTMLButtonElement>('[data-filter="day"]');
+  let activeDay = '4/10';
+  const eventModal = document.getElementById('event-modal') as HTMLDialogElement | null;
+  const eventModalTitle = document.getElementById('event-modal-title');
+  const eventModalMeta = document.getElementById('event-modal-meta');
+  const eventModalDescription = document.getElementById('event-modal-description');
+  const eventModalLink = document.getElementById('event-modal-link') as HTMLAnchorElement | null;
+
+  function applyDayFilter() {
+    document.querySelectorAll<HTMLElement>('.day-timetable').forEach((table) => {
+      table.style.display = table.dataset.day === activeDay ? '' : 'none';
+    });
+  }
+
+  dayButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+      activeDay = button.dataset.value ?? '4/10';
+      document
+        .querySelectorAll<HTMLButtonElement>('[data-filter="day"]')
+        .forEach((b) => b.classList.remove('active'));
+      button.classList.add('active');
+      applyDayFilter();
+    });
+  });
+
+  document.querySelectorAll<HTMLElement>('.js-event-card').forEach((card) => {
+    card.addEventListener('click', () => {
+      if (!eventModal || !eventModalTitle || !eventModalMeta || !eventModalDescription) {
+        return;
+      }
+      eventModalTitle.textContent = card.dataset.eventName ?? '';
+      eventModalMeta.textContent = `${card.dataset.eventExhibitor ?? ''} / ${card.dataset.eventTime ?? ''}`;
+      eventModalDescription.textContent = card.dataset.eventDescription ?? '';
+      if (eventModalLink) {
+        eventModalLink.href = card.dataset.circleLink ?? '/exhibitors';
+      }
+      eventModal.showModal();
+    });
+  });
+
+  eventModal?.addEventListener('click', (event) => {
+    const target = event.target as HTMLElement;
+    if (target === eventModal || target.closest('[data-modal-close]')) {
+      eventModal.close();
+    }
+  });
+
+  applyDayFilter();
+</script>
+
+<style>
+  .page-title {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: 0.96px;
+  }
+
+  .timetable-wrap {
+    overflow-x: auto;
+    padding: 12px;
+  }
+
+  .filter-bar {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .filter-label {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.96px;
+  }
+
+  .filter-btn-wrapper {
+    margin-top: 8px;
+    display: flex;
+    gap: 0;
+  }
+
+  .filter-btn {
+    width: 50%;
+    padding: 8px 12px;
+    font-size: 14px;
+    font-family: inherit;
+    font-weight: 700;
+    letter-spacing: 0.96px;
+    border: 1.5px solid var(--wakabasai-red);
+    background: transparent;
+    color: var(--wakabasai-red);
+    cursor: pointer;
+  }
+
+  .filter-btn.active {
+    background: var(--wakabasai-red);
+    color: #fff;
+  }
+
+  .timetable-hint {
+    margin: 0 0 10px;
+    font-size: 12px;
+    color: #7c5f5f;
+  }
+
+  .event-modal {
+    border: none;
+    border-radius: 12px;
+    padding: 0;
+    width: min(560px, calc(100% - 32px));
+    background: transparent;
+  }
+
+  .event-modal::backdrop {
+    background: rgba(0, 0, 0, 0.45);
+  }
+
+  .event-modal-card {
+    position: relative;
+    margin: 0;
+    border-radius: 12px;
+    background: #fff;
+    border: 1px solid #efd9d9;
+    padding: 20px 20px 16px;
+  }
+
+  .event-modal-close {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 999px;
+    background: #f6eded;
+    color: #6b5959;
+    font-size: 20px;
+    cursor: pointer;
+  }
+
+  .event-modal-title {
+    margin: 0;
+    padding-right: 36px;
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.35;
+  }
+
+  .event-modal-meta {
+    margin: 8px 0 0;
+    color: #7b6666;
+    font-size: 14px;
+  }
+
+  .event-modal-description {
+    margin: 12px 0 0;
+    color: #3f3333;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  .event-modal-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 14px;
+    min-height: 40px;
+    padding: 0 14px;
+    border: 1.5px solid var(--wakabasai-red);
+    background: var(--wakabasai-red);
+    color: #fff;
+    font-weight: 700;
+    text-decoration: none;
+    border-radius: 0;
+  }
+
+  .event-modal-link:hover {
+    opacity: 0.9;
+  }
+
+  .timetable-grid {
+    --time-col-width: 130px;
+    --venue-col-width: 180px;
+    --slot-height: 128px;
+    --slot-count: 1;
+    --timeline-height: calc(var(--slot-height) * var(--slot-count));
+
+    display: grid;
+    grid-template-columns:
+      var(--time-col-width)
+      var(--venue-col-width)
+      var(--venue-col-width)
+      var(--venue-col-width)
+      calc(var(--venue-col-width) * 2);
+    grid-template-rows: auto var(--timeline-height);
+    min-width: calc(var(--time-col-width) + var(--venue-col-width) * 5);
+    border: 1px solid #f0e3e3;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #fff;
+  }
+
+  .time-header,
+  .venue-header {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    padding: 12px 10px;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.48px;
+    color: #fff;
+    background: var(--wakabasai-red);
+    border-right: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .time-header {
+    left: 0;
+    z-index: 3;
+  }
+
+  .time-axis {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    display: grid;
+    grid-template-rows: repeat(var(--slot-count), var(--slot-height));
+    background: #fff5f5;
+    border-right: 1px solid #f4eded;
+  }
+
+  .time-slot-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 8px;
+    color: var(--wakabasai-red);
+    font-size: 14px;
+    font-weight: 700;
+    text-align: center;
+    border-bottom: 1px solid #f4eded;
+  }
+
+  .venue-track {
+    position: relative;
+    height: var(--timeline-height);
+    border-right: 1px solid #f4eded;
+    background: #fff;
+    overflow: hidden;
+  }
+
+  .hour-lines {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    grid-template-rows: repeat(var(--slot-count), var(--slot-height));
+    pointer-events: none;
+  }
+
+  .hour-line {
+    border-bottom: 1px solid #f4eded;
+  }
+
+  .empty-track {
+    margin: 0;
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #b7a8a8;
+  }
+
+  @media (max-width: 720px) {
+    .timetable-wrap {
+      padding: 8px;
+    }
+
+    .timetable-hint {
+      margin-bottom: 8px;
+      font-size: 11px;
+    }
+  }
+</style>
