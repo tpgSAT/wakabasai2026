@@ -194,7 +194,7 @@ const dayTimetables: DayTimetable[] = dayOrder.map((day) => {
                       event={item.event}
                       style={`top:${item.topPercent}%;height:${item.heightPercent}%;left:calc(${(item.lane * 100) / track.laneCount}% + 2px);width:calc(${100 / track.laneCount}% - 4px);`}
                       description={item.event.description}
-                      circleLink={`/exhibitors#${getCircleId(item.event.exhibitor)}`}
+                      circleLink={`/exhibitors?day=${dayTable.day}#${getCircleId(item.event.exhibitor)}`}
                     />
                   ))
                 ) : (

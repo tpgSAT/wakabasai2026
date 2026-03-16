@@ -195,7 +195,7 @@ export const eventData: Event[] = [
     },
     {
         eventName: "イラストと電子音楽の制作体験会",
-        exhibitor: "デジタル創作同好会traP",
+        exhibitor: "東京科学大学デジタル創作同好会traP",
         description: "昨年と同様に、電子音楽の制作体験（DTMソフトを用いた打ち込み）と、イラスト制作体験（用意した線画へのデジタル着彩）を行えるイベントを開催する予定です。",
         location: "Taki Plaza 2F ワークショップ",
         startTime: "13:15",
