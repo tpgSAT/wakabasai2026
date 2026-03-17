@@ -194,6 +194,15 @@ export const eventData: Event[] = [
         days: ["4/11"],
     },
     {
+        eventName: "「作画＆彩色」アニメ制作体験会",
+        exhibitor: "アニメーション研究会",
+        description: "私たちレゴ同好会のメンバーが作ったレゴのオリジナルキットを組み立ててみましょう。",
+        location: "Taki Plaza 2F ワークショップ",
+        startTime: "10:00",
+        endTime: "13:00",
+        days: ["4/11"],
+    },
+    {
         eventName: "イラストと電子音楽の制作体験会",
         exhibitor: "東京科学大学デジタル創作同好会traP",
         description: "昨年と同様に、電子音楽の制作体験（DTMソフトを用いた打ち込み）と、イラスト制作体験（用意した線画へのデジタル着彩）を行えるイベントを開催する予定です。",
