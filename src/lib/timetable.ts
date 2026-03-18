@@ -196,7 +196,7 @@ export const eventData: Event[] = [
     {
         eventName: "「作画＆彩色」アニメ制作体験会",
         exhibitor: "アニメーション研究会",
-        description: "私たちレゴ同好会のメンバーが作ったレゴのオリジナルキットを組み立ててみましょう。",
+        description: "",
         location: "Taki Plaza 2F ワークショップ",
         startTime: "10:00",
         endTime: "13:00",
