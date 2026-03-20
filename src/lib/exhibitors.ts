@@ -2,6 +2,7 @@
 import exhibitor0Logo from '@assets/exhibitors/exhibitor0_logo.jpg';
 import exhibitor0Photo from '@assets/exhibitors/exhibitor0_photo.jpg';
 import exhibitor1Logo from '@assets/exhibitors/exhibitor1_logo.jpg';
+import exhibitor1Photo from '@assets/exhibitors/exhibitor1_photo.jpg';
 import exhibitor2Logo from '@assets/exhibitors/exhibitor2_logo.png';
 import exhibitor2Photo from '@assets/exhibitors/exhibitor2_photo.jpg';
 import exhibitor3Logo from '@assets/exhibitors/exhibitor3_logo.jpg';
@@ -107,7 +108,7 @@ export const exhibitors: exhibitor[] = [
   exhibitorName: "ロス・ガラチェロス",
   exhibitorDescription: "ロス・ガラチェロスは激アツラテン🎺ジャズビッグバンドサークル！陽気なラテンリズムで演奏し、仲間と熱く音楽を楽しめる最高の場所です！",
   exhibitorIcon: exhibitor1Logo,
-  exhibitorPhoto: null,
+  exhibitorPhoto: exhibitor1Photo,
   booths: ["ステージ企画"],
   days: ["4/11"],
   xLink: "https://x.com/losguarajr",
