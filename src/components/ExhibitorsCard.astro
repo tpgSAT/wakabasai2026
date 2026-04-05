@@ -6,11 +6,12 @@ import Button from "@components/Button.astro";
 import xIcon from "@assets/exhibitors/x.svg";
 import instagramIcon from "@assets/exhibitors/instagram.svg";
 
-const { exhibitorName, exhibitorDescription, exhibitorIcon, exhibitorPhoto, booths, xLink, instagramLink, youtubeLink, websiteLink } = Astro.props as exhibitor;
+const { exhibitorName, exhibitorDescription, exhibitorIcon, exhibitorPhoto, booths, xLink, instagramLink, youtubeLink, websiteLink, circleBoothLocation } = Astro.props as exhibitor;
 
 const LIMIT = 40;
 const isLong = exhibitorDescription.length > LIMIT;
 const shortDescription = isLong ? exhibitorDescription.slice(0, LIMIT) + "…" : exhibitorDescription;
+const mapLink = circleBoothLocation ? `/map?floor=B2&booth=circle-booth-${encodeURIComponent(circleBoothLocation)}` : null;
 ---
 <div class="exhibitor-card">
     <div class="exhibitor-header">
@@ -34,16 +35,19 @@ const shortDescription = isLong ? exhibitorDescription.slice(0, LIMIT) + "…" :
             ))}
         </div>
         <p class="text-body description-short">{shortDescription}</p>
+        {mapLink && (
+            <a class="map-link-btn" href={mapLink}>マップを見る</a>
+        )}
         {(isLong || exhibitorPhoto)&& (
             <>
              <div class="description-full" hidden>
-                {exhibitorPhoto && (
-                    <Image src={exhibitorPhoto} alt={`${exhibitorName}の写真`} class="exhibitor-photo" />
-                )}
-                <p class="text-body">{exhibitorDescription}</p>
-            </div>
-            <Button text="詳細を見る" style="outlined" class="details-btn" />
-            </>
+                 {exhibitorPhoto && (
+                     <Image src={exhibitorPhoto} alt={`${exhibitorName}の写真`} class="exhibitor-photo" />
+                 )}
+                 <p class="text-body">{exhibitorDescription}</p>
+             </div>
+             <Button text="詳細を見る" style="outlined" class="details-btn" />
+             </>
         )}
     </div>
 </div>
@@ -139,5 +143,20 @@ const shortDescription = isLong ? exhibitorDescription.slice(0, LIMIT) + "…" :
         height: 100%;
         object-fit: cover;
         margin-bottom: 8px;
+    }
+
+    .map-link-btn {
+        display: block;
+        width: 100%;
+        box-sizing: border-box;
+        text-align: center;
+        margin-top: 8px;
+        padding: 8px 12px;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 700;
+        letter-spacing: 0.96px;
+        color: #fff;
+        background-color: var(--wakabasai-red);
     }
 </style>
