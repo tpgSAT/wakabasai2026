@@ -38,16 +38,22 @@ const floors = [
 
       <div class="map-stage">
         <div class="map-toolbar">
-          <p class="map-hint">※ マップは拡大できます（+ / -、Ctrl + ホイール、PCはドラッグで移動）</p>
-          <div class="zoom-controls" aria-label="マップズーム操作">
-            <button id="zoom-out" class="zoom-btn" type="button" aria-label="縮小">-</button>
-            <span id="zoom-level" class="zoom-level">100%</span>
-            <button id="zoom-in" class="zoom-btn" type="button" aria-label="拡大">+</button>
-            <button id="zoom-reset" class="zoom-reset" type="button">リセット</button>
-          </div>
+          <p class="map-hint">※ マップは拡大できます（Ctrl + ホイール、ピンチ、PCはドラッグで移動）</p>
         </div>
         <p id="map-status" class="map-status" aria-live="polite"></p>
         <div id="map-container" class="map-container" role="tabpanel" tabindex="0"></div>
+        <dialog id="booth-modal" class="booth-modal">
+          <article class="booth-modal-card">
+            <div class="booth-modal-handle" aria-hidden="true"></div>
+            <button type="button" class="booth-modal-close" data-booth-modal-close aria-label="閉じる">×</button>
+            <h2 id="booth-modal-title" class="booth-modal-title"></h2>
+            <p id="booth-modal-type" class="booth-type-tag"></p>
+            <div class="booth-modal-row">
+              <p class="booth-modal-label">運営団体</p>
+              <p id="booth-modal-organizer" class="booth-modal-value"></p>
+            </div>
+          </article>
+        </dialog>
       </div>
     </div>
   </section>
@@ -57,10 +63,11 @@ const floors = [
   const buttons = Array.from(document.querySelectorAll('[data-floor-button]'));
   const mapContainer = document.getElementById('map-container');
   const mapStatus = document.getElementById('map-status');
-  const zoomInButton = document.getElementById('zoom-in');
-  const zoomOutButton = document.getElementById('zoom-out');
-  const zoomResetButton = document.getElementById('zoom-reset');
-  const zoomLevelLabel = document.getElementById('zoom-level');
+  const boothModal = document.getElementById('booth-modal');
+  const boothModalType = document.getElementById('booth-modal-type');
+  const boothModalTitle = document.getElementById('booth-modal-title');
+  const boothModalOrganizer = document.getElementById('booth-modal-organizer');
+  const boothModalCloseButton = boothModal?.querySelector('[data-booth-modal-close]');
 
   const MIN_ZOOM = 0.75;
   const MAX_ZOOM = 4;
@@ -73,6 +80,32 @@ const floors = [
   let panStartY = 0;
   let panStartScrollLeft = 0;
   let panStartScrollTop = 0;
+  let activeBoothId = null;
+  const urlParams = new URLSearchParams(location.search);
+  let requestedBoothId = urlParams.get('booth');
+  const requestedBoothInfo = {
+    type: urlParams.get('boothType'),
+    title: urlParams.get('boothTitle'),
+    organizer: urlParams.get('boothOrganizer'),
+  };
+
+  const DEFAULT_BOOTH_ORGANIZER = '出展団体（調整中）';
+
+  const buildCircleBoothDetails = () =>
+    Array.from({ length: 19 }, (_, index) => {
+      const boothNo = index + 1;
+      const id = `circle-booth-${boothNo}`;
+      return [
+        id,
+        {
+          type: 'サークルブース',
+          title: `サークルブース ${boothNo}`,
+          organizer: DEFAULT_BOOTH_ORGANIZER,
+        },
+      ];
+    });
+
+  const boothDetailMap = new Map(buildCircleBoothDetails());
 
   const floorState = new Map(
     buttons.map((button) => [
@@ -102,9 +135,6 @@ const floors = [
       svg.style.width = `${Math.round(zoomLevel * 100)}%`;
       svg.style.maxWidth = 'none';
       svg.style.height = 'auto';
-    }
-    if (zoomLevelLabel) {
-      zoomLevelLabel.textContent = `${Math.round(zoomLevel * 100)}%`;
     }
   };
 
@@ -146,6 +176,177 @@ const floors = [
     history.pushState({ floor }, '', url);
   };
 
+  const updateBoothQuery = (boothId, mode = 'replace') => {
+    const url = new URL(location.href);
+    if (boothId) {
+      url.searchParams.set('booth', boothId);
+    } else {
+      url.searchParams.delete('booth');
+    }
+    url.searchParams.delete('boothType');
+    url.searchParams.delete('boothTitle');
+    url.searchParams.delete('boothOrganizer');
+
+    if (mode === 'push') {
+      history.pushState({}, '', url);
+      return;
+    }
+    history.replaceState({}, '', url);
+  };
+
+  const formatBoothLabel = (boothId) => {
+    const matched = boothId.match(/^circle-booth-(\d+)$/);
+    if (!matched) return boothId;
+    return `サークルブース ${matched[1]}`;
+  };
+
+  const getBoothDetail = (boothId, overrides = {}) => {
+    const preset = boothDetailMap.get(boothId) ?? {};
+
+    let fallbackType = 'サークルブース';
+    if (boothId.startsWith('workshop-')) fallbackType = 'ワークショップ';
+    if (boothId.startsWith('boardgame-')) fallbackType = 'ボードゲーム紹介';
+    if (boothId.startsWith('kimwipe-')) fallbackType = 'キムワイプ卓球';
+
+    return {
+      type: overrides.type ?? preset.type ?? fallbackType,
+      title: overrides.title ?? preset.title ?? formatBoothLabel(boothId),
+      organizer: overrides.organizer ?? preset.organizer ?? DEFAULT_BOOTH_ORGANIZER,
+    };
+  };
+
+  const getBoothElements = () =>
+    Array.from(mapContainer?.querySelectorAll('[id^="circle-booth-"]') ?? []).filter(
+      (el) => el instanceof SVGGraphicsElement
+    );
+
+  const applyDefaultBoothStyle = (boothEl) => {
+    boothEl.style.opacity = '0.96';
+    boothEl.style.fill = '#ff7ba7';
+    boothEl.style.stroke = '#ffffff';
+    boothEl.style.strokeWidth = '2';
+    boothEl.style.filter = '';
+  };
+
+  const applyHoverBoothStyle = (boothEl) => {
+    boothEl.style.opacity = '1';
+    boothEl.style.fill = '#ff5b95';
+    boothEl.style.stroke = '#ffffff';
+    boothEl.style.strokeWidth = '2';
+  };
+
+  const clearActiveBooth = () => {
+    const mapCanvas = mapContainer?.querySelector('.map-canvas');
+    mapCanvas?.classList.remove('has-active-booth');
+    getBoothElements().forEach((el) => {
+      el.classList.remove('is-active-booth');
+      applyDefaultBoothStyle(el);
+    });
+    if (!activeBoothId) return;
+    const activeEl = mapContainer?.querySelector(`#${activeBoothId}`);
+    activeEl?.classList.remove('is-active-booth');
+    activeBoothId = null;
+  };
+
+  const closeBoothModal = ({ clearQuery = true } = {}) => {
+    if (boothModal?.open) {
+      boothModal.close();
+    }
+    clearActiveBooth();
+    if (clearQuery) {
+      updateBoothQuery(null, 'replace');
+    }
+  };
+
+  const openBoothModal = (boothId, { syncUrl = true, detailOverrides = {} } = {}) => {
+    if (
+      !mapContainer ||
+      !boothModal ||
+      !boothModalType ||
+      !boothModalTitle ||
+      !boothModalOrganizer
+    ) {
+      return;
+    }
+    const boothEl = mapContainer.querySelector(`#${boothId}`);
+    if (!(boothEl instanceof SVGGraphicsElement)) {
+      mapStatus.textContent = `指定されたブース (${boothId}) は見つかりませんでした。`;
+      return;
+    }
+
+    const boothDetail = getBoothDetail(boothId, detailOverrides);
+    clearActiveBooth();
+    const mapCanvas = mapContainer.querySelector('.map-canvas');
+    mapCanvas?.classList.add('has-active-booth');
+    getBoothElements().forEach((el) => {
+      el.style.opacity = '0.35';
+      el.style.filter = '';
+    });
+    boothEl.classList.add('is-active-booth');
+    boothEl.style.opacity = '1';
+    boothEl.style.fill = '#f9004b';
+    boothEl.style.stroke = '#91002f';
+    boothEl.style.strokeWidth = '3';
+    boothEl.style.filter = 'drop-shadow(0 0 10px rgba(249, 0, 75, 0.65))';
+    activeBoothId = boothId;
+    boothModalType.textContent = boothDetail.type;
+    boothModalTitle.textContent = boothDetail.title;
+    boothModalOrganizer.textContent = boothDetail.organizer;
+
+    const bounds = boothEl.getBoundingClientRect();
+    const containerBounds = mapContainer.getBoundingClientRect();
+    const offsetX = bounds.left - containerBounds.left + mapContainer.scrollLeft;
+    const offsetY = bounds.top - containerBounds.top + mapContainer.scrollTop;
+    mapContainer.scrollTo({
+      left: Math.max(offsetX - mapContainer.clientWidth / 2 + bounds.width / 2, 0),
+      top: Math.max(offsetY - mapContainer.clientHeight / 2 + bounds.height / 2, 0),
+      behavior: 'smooth',
+    });
+
+    if (!boothModal.open) {
+      boothModal.showModal();
+    }
+    if (syncUrl) {
+      updateBoothQuery(boothId, 'replace');
+    }
+  };
+
+  const bindBoothInteractions = () => {
+    const boothElements = Array.from(
+      mapContainer?.querySelectorAll('[id^="circle-booth-"]') ?? []
+    );
+    boothElements.forEach((boothEl) => {
+      if (!(boothEl instanceof SVGElement)) return;
+      applyDefaultBoothStyle(boothEl);
+      boothEl.classList.add('is-clickable-booth');
+      boothEl.setAttribute('tabindex', '0');
+      boothEl.setAttribute('role', 'button');
+      boothEl.setAttribute('aria-label', `${formatBoothLabel(boothEl.id)}を開く`);
+      boothEl.addEventListener('mouseenter', () => {
+        if (boothEl.id === activeBoothId) return;
+        applyHoverBoothStyle(boothEl);
+      });
+      boothEl.addEventListener('mouseleave', () => {
+        if (boothEl.id === activeBoothId) return;
+        applyDefaultBoothStyle(boothEl);
+      });
+      boothEl.addEventListener('focus', () => {
+        if (boothEl.id === activeBoothId) return;
+        applyHoverBoothStyle(boothEl);
+      });
+      boothEl.addEventListener('blur', () => {
+        if (boothEl.id === activeBoothId) return;
+        applyDefaultBoothStyle(boothEl);
+      });
+      boothEl.addEventListener('click', () => openBoothModal(boothEl.id));
+      boothEl.addEventListener('keydown', (event) => {
+        if (event.key !== 'Enter' && event.key !== ' ') return;
+        event.preventDefault();
+        openBoothModal(boothEl.id);
+      });
+    });
+  };
+
   const renderUnavailable = (floor) => {
     mapContainer.innerHTML = `
       <div class="map-placeholder">
@@ -154,6 +355,7 @@ const floors = [
       </div>
     `;
     resetZoom();
+    closeBoothModal({ clearQuery: false });
     mapStatus.textContent = `${getFloorLabel(floor)} は準備中です。`;
   };
 
@@ -165,6 +367,7 @@ const floors = [
       </div>
     `;
     resetZoom();
+    closeBoothModal({ clearQuery: false });
     mapStatus.textContent = `${getFloorLabel(floor)} の読み込みに失敗しました。`;
   };
 
@@ -189,6 +392,14 @@ const floors = [
       const svg = await response.text();
       mapContainer.innerHTML = `<div class="map-canvas">${svg}</div>`;
       resetZoom();
+      bindBoothInteractions();
+      if (requestedBoothId) {
+        openBoothModal(requestedBoothId, {
+          syncUrl: true,
+          detailOverrides: requestedBoothInfo,
+        });
+        requestedBoothId = null;
+      }
       mapStatus.textContent = `${getFloorLabel(floor)} を表示中`;
     } catch {
       renderError(floor);
@@ -207,18 +418,6 @@ const floors = [
     const floor = normalizeFloor(new URLSearchParams(location.search).get('floor'));
     if (floor === currentFloor) return;
     renderFloor(floor, 'none');
-  });
-
-  zoomInButton?.addEventListener('click', () => {
-    setZoom(zoomLevel + ZOOM_STEP);
-  });
-
-  zoomOutButton?.addEventListener('click', () => {
-    setZoom(zoomLevel - ZOOM_STEP);
-  });
-
-  zoomResetButton?.addEventListener('click', () => {
-    resetZoom();
   });
 
   mapContainer?.addEventListener(
@@ -294,6 +493,21 @@ const floors = [
     if (!isMousePanning || !mapContainer) return;
     isMousePanning = false;
     mapContainer.classList.remove('is-dragging');
+  });
+
+  boothModalCloseButton?.addEventListener('click', () => {
+    closeBoothModal();
+  });
+
+  boothModal?.addEventListener('click', (event) => {
+    if (event.target === boothModal) {
+      closeBoothModal();
+    }
+  });
+
+  boothModal?.addEventListener('close', () => {
+    clearActiveBooth();
+    updateBoothQuery(null, 'replace');
   });
 
   renderFloor(currentFloor, 'replace');
@@ -387,45 +601,6 @@ const floors = [
     color: #7b6069;
   }
 
-  .zoom-controls {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .zoom-btn,
-  .zoom-reset {
-    min-height: 34px;
-    border: 1px solid #f2d9e1;
-    background: #fff;
-    color: #613d47;
-    font-family: inherit;
-    font-weight: 700;
-    cursor: pointer;
-  }
-
-  .zoom-btn {
-    min-width: 34px;
-    border-radius: 8px;
-    font-size: 18px;
-    line-height: 1;
-  }
-
-  .zoom-reset {
-    border-radius: 8px;
-    font-size: 12px;
-    padding: 0 10px;
-    letter-spacing: 0.48px;
-  }
-
-  .zoom-level {
-    min-width: 48px;
-    text-align: center;
-    color: #6a434f;
-    font-size: 13px;
-    font-weight: 700;
-  }
-
   .map-status {
     margin: 8px 0 0;
     padding: 0 16px;
@@ -463,6 +638,39 @@ const floors = [
     height: auto;
   }
 
+  .map-canvas :global(.is-clickable-booth) {
+    fill: #ff7ba7;
+    stroke: #ffffff;
+    stroke-width: 2px;
+    opacity: 0.96;
+    cursor: pointer;
+    transition: fill 0.2s ease, opacity 0.2s ease, transform 0.2s ease;
+  }
+
+  .map-canvas :global(.is-clickable-booth:hover) {
+    fill: #ff5b95;
+    opacity: 1;
+  }
+
+  .map-canvas :global(.is-clickable-booth:focus-visible) {
+    fill: #ff5b95;
+    stroke: #7d0d34;
+    stroke-width: 2.5px;
+    opacity: 1;
+  }
+
+  .map-canvas.has-active-booth :global(.is-clickable-booth) {
+    opacity: 0.35;
+  }
+
+  .map-canvas :global(.is-active-booth) {
+    fill: #f9004b !important;
+    stroke: #91002f;
+    stroke-width: 3px;
+    opacity: 1 !important;
+    filter: drop-shadow(0 0 10px rgba(249, 0, 75, 0.65));
+  }
+
   .map-placeholder {
     min-height: 0;
     height: 100%;
@@ -494,6 +702,95 @@ const floors = [
     background: #fff4f7;
   }
 
+  .booth-modal {
+    border: none;
+    padding: 0;
+    width: min(420px, calc(100% - 32px));
+    background: transparent;
+  }
+
+  .booth-modal::backdrop {
+    background: rgba(0, 0, 0, 0.4);
+  }
+
+  .booth-modal-card {
+    position: relative;
+    margin: 0;
+    border: 1px solid #f3d5df;
+    border-radius: 16px;
+    background: #fff;
+    padding: 14px 18px 18px;
+    box-shadow: 0 16px 44px rgba(43, 18, 27, 0.26);
+  }
+
+  .booth-modal-handle {
+    width: 44px;
+    height: 5px;
+    border-radius: 999px;
+    margin: 2px auto 10px;
+    background: #ead4db;
+  }
+
+  .booth-modal-close {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 30px;
+    height: 30px;
+    border: none;
+    border-radius: 999px;
+    background: #f7ecf0;
+    color: #735a62;
+    font-size: 18px;
+    cursor: pointer;
+  }
+
+  .booth-modal-title {
+    margin: 0;
+    color: #3e2e33;
+    font-size: 20px;
+    font-weight: 700;
+    padding-right: 30px;
+    letter-spacing: 1px;
+  }
+
+  .booth-type-tag {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    margin: 10px 0 0;
+    background-color: var(--wakabasai-red);
+    color: #fff;
+    padding: 4px 8px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.48px;
+  }
+
+  .booth-modal-row {
+    margin: 12px 0 0;
+    padding: 8px 10px;
+    border-radius: 10px;
+    background: #fff8fa;
+  }
+
+  .booth-modal-label {
+    margin: 0;
+    color: #7d6970;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.56px;
+  }
+
+  .booth-modal-value {
+    margin: 0;
+    margin-top: 4px;
+    color: #3f3333;
+    font-size: 14px;
+    letter-spacing: 0.56px;
+    line-height: 1.6;
+  }
+
   @media (max-width: 767px) {
     .page-title {
       font-size: 24px;
@@ -522,17 +819,44 @@ const floors = [
       gap: 8px;
     }
 
-    .zoom-controls {
-      width: 100%;
-      justify-content: flex-start;
-    }
-
     .map-status {
       padding: 0 10px;
     }
 
     .map-container {
       height: clamp(280px, 62dvh, 560px);
+    }
+
+    .booth-modal {
+      width: 100vw;
+      max-width: 100vw;
+      margin: 0;
+      padding: 0;
+    }
+
+    .booth-modal[open] {
+      position: fixed;
+      inset: auto 0 0 0;
+      margin: 0;
+      transform: none;
+    }
+
+    .booth-modal-card {
+      border-left: none;
+      border-right: none;
+      border-bottom: none;
+      border-radius: 18px 18px 0 0;
+      padding: 12px 14px calc(14px + env(safe-area-inset-bottom));
+      box-shadow: 0 -12px 36px rgba(43, 18, 27, 0.2);
+    }
+
+    .booth-modal-close {
+      top: 10px;
+      right: 10px;
+    }
+
+    .booth-modal-row {
+      padding: 8px;
     }
   }
 </style>
