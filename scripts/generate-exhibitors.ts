@@ -3,13 +3,23 @@ import fs from "fs"
 import axios from "axios"
 import path from "path"
 
-const CSV = "data/exhibitors.csv"
+const CSV_CANDIDATES = ["data/wakabasai_exhibitor.csv", "data/exhibitors.csv"]
+const CSV = CSV_CANDIDATES.find((file) => fs.existsSync(file)) ?? CSV_CANDIDATES[0]
 const ASSETS = "src/assets/exhibitors"
 const OUTPUT = "src/lib/exhibitors.ts"
 
 function parseDays(v: string): string[] {
   if (!v) return []
-  return v.split(",").map(s => s.trim())
+  return v
+    .split(/[,.、]/)
+    .map(s => s.trim().replace(/^"+|"+$/g, ""))
+    .filter(Boolean)
+}
+
+function parseCircleBoothDays(circleBoothDate: string): string[] | null {
+  const parsed = parseDays(circleBoothDate)
+  if (parsed.length > 0) return parsed
+  return null
 }
 
 function driveToDirect(url?: string) {
@@ -29,7 +39,21 @@ const MIME_TO_EXT: Record<string, string> = {
   "image/heif": "heif",
 }
 
+const KNOWN_IMAGE_EXTENSIONS = Array.from(new Set([...Object.values(MIME_TO_EXT), "jpg"]))
+
+function findExistingImage(filePath: string): string | null {
+  const parsed = path.parse(filePath)
+  for (const ext of KNOWN_IMAGE_EXTENSIONS) {
+    const candidate = path.join(parsed.dir, `${parsed.name}.${ext}`)
+    if (fs.existsSync(candidate)) return candidate
+  }
+  return null
+}
+
 async function download(url: string, filePath: string): Promise<string> {
+  const existing = findExistingImage(filePath)
+  if (existing) return path.basename(existing)
+
   const res = await axios.get(url, { responseType: "arraybuffer" })
   const mime = (res.headers["content-type"] as string | undefined)?.split(";")[0].trim() ?? ""
   const ext = MIME_TO_EXT[mime] ?? (path.extname(filePath).slice(1) || "jpg")
@@ -92,7 +116,10 @@ async function run() {
   xLink: ${r.x_link ? `"${r.x_link}"` : null},
   instagramLink: ${r.instagram_link ? `"${r.instagram_link}"` : null},
   youtubeLink: ${r.youtube_link ? `"${r.youtube_link}"` : null},
-  websiteLink: ${r.website_link ? `"${r.website_link}"` : null}
+  websiteLink: ${r.website_link ? `"${r.website_link}"` : null},
+  circleBoothTitle: ${r.circle_booth_title ? JSON.stringify(r.circle_booth_title.trim()) : null},
+  circleBoothLocation: ${r.circle_booth_location ? JSON.stringify(r.circle_booth_location.trim()) : null},
+  circleBoothDate: ${JSON.stringify(parseCircleBoothDays(r.circle_booth_date))}
 }
 `)
   }
@@ -115,6 +142,9 @@ export type exhibitor = {
     instagramLink: string | null;
     youtubeLink: string | null;
     websiteLink: string | null;
+    circleBoothTitle: string | null;
+    circleBoothLocation: string | null;
+    circleBoothDate: EventDay[] | null;
 }
 
 
