@@ -1,4 +1,538 @@
 ---
-import ComingSoonLayout from '@layouts/ComingSoonLayout.astro';
+import Layout from '@layouts/Layout.astro';
+import Section from '@components/layout/Section.astro';
+
+const floors = [
+  { id: 'B2', label: 'B2F', available: true },
+  { id: 'B1', label: 'B1F', available: false },
+  { id: '1', label: '1F', available: true },
+  { id: '2', label: '2F', available: false },
+];
 ---
-<ComingSoonLayout />
+
+<Layout title="マップ">
+  <Section>
+    <h1 class="page-title">フロアマップ</h1>
+    <p class="text-body">
+      ボタンを押すとフロアを切り替えられます。URLに現在のフロアが保存されるため、共有や再訪時も同じ階から表示できます。
+    </p>
+  </Section>
+
+  <section class="map-full-section">
+    <div class="map-shell">
+      <div class="floor-tabs" role="tablist" aria-label="フロア選択">
+        {floors.map((floor) => (
+          <button
+            type="button"
+            class:list={['floor-tab', !floor.available && 'is-unavailable']}
+            role="tab"
+            data-floor-button
+            data-floor={floor.id}
+            data-available={String(floor.available)}
+          >
+            <span>{floor.label}</span>
+            {!floor.available && <span class="floor-tab-meta">準備中</span>}
+          </button>
+        ))}
+      </div>
+
+      <div class="map-stage">
+        <div class="map-toolbar">
+          <p class="map-hint">※ マップは拡大できます（+ / -、Ctrl + ホイール、PCはドラッグで移動）</p>
+          <div class="zoom-controls" aria-label="マップズーム操作">
+            <button id="zoom-out" class="zoom-btn" type="button" aria-label="縮小">-</button>
+            <span id="zoom-level" class="zoom-level">100%</span>
+            <button id="zoom-in" class="zoom-btn" type="button" aria-label="拡大">+</button>
+            <button id="zoom-reset" class="zoom-reset" type="button">リセット</button>
+          </div>
+        </div>
+        <p id="map-status" class="map-status" aria-live="polite"></p>
+        <div id="map-container" class="map-container" role="tabpanel" tabindex="0"></div>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<script>
+  const buttons = Array.from(document.querySelectorAll('[data-floor-button]'));
+  const mapContainer = document.getElementById('map-container');
+  const mapStatus = document.getElementById('map-status');
+  const zoomInButton = document.getElementById('zoom-in');
+  const zoomOutButton = document.getElementById('zoom-out');
+  const zoomResetButton = document.getElementById('zoom-reset');
+  const zoomLevelLabel = document.getElementById('zoom-level');
+
+  const MIN_ZOOM = 0.75;
+  const MAX_ZOOM = 4;
+  const ZOOM_STEP = 0.25;
+  let zoomLevel = 1;
+  let pinchStartDistance = null;
+  let pinchStartZoom = 1;
+  let isMousePanning = false;
+  let panStartX = 0;
+  let panStartY = 0;
+  let panStartScrollLeft = 0;
+  let panStartScrollTop = 0;
+
+  const floorState = new Map(
+    buttons.map((button) => [
+      button.dataset.floor,
+      { available: button.dataset.available === 'true' },
+    ])
+  );
+
+  const floorOrder = buttons
+    .map((button) => button.dataset.floor)
+    .filter((floor) => typeof floor === 'string');
+  const firstAvailableFloor =
+    floorOrder.find((floor) => floorState.get(floor)?.available) ?? floorOrder[0];
+
+  const normalizeFloor = (value) => (floorState.has(value) ? value : firstAvailableFloor);
+
+  const getFloorLabel = (floor) => {
+    const button = buttons.find((item) => item.dataset.floor === floor);
+    return button ? button.querySelector('span')?.textContent ?? `${floor}F` : `${floor}F`;
+  };
+
+  const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+
+  const applyZoom = () => {
+    const svg = mapContainer?.querySelector('svg');
+    if (svg instanceof SVGElement) {
+      svg.style.width = `${Math.round(zoomLevel * 100)}%`;
+      svg.style.maxWidth = 'none';
+      svg.style.height = 'auto';
+    }
+    if (zoomLevelLabel) {
+      zoomLevelLabel.textContent = `${Math.round(zoomLevel * 100)}%`;
+    }
+  };
+
+  const setZoom = (nextZoom) => {
+    zoomLevel = clamp(Math.round(nextZoom * 100) / 100, MIN_ZOOM, MAX_ZOOM);
+    applyZoom();
+  };
+
+  const getTouchDistance = (touches) => {
+    const [touchA, touchB] = touches;
+    return Math.hypot(touchA.clientX - touchB.clientX, touchA.clientY - touchB.clientY);
+  };
+
+  const resetZoom = () => {
+    zoomLevel = 1;
+    applyZoom();
+  };
+
+  let currentFloor = normalizeFloor(new URLSearchParams(location.search).get('floor'));
+
+  const setActiveButton = (floor) => {
+    buttons.forEach((button) => {
+      const isActive = button.dataset.floor === floor;
+      button.classList.toggle('active', isActive);
+      button.setAttribute('aria-selected', String(isActive));
+      button.tabIndex = isActive ? 0 : -1;
+    });
+  };
+
+  const updateHistory = (floor, mode) => {
+    if (mode === 'none') return;
+
+    const url = new URL(location.href);
+    url.searchParams.set('floor', floor);
+    if (mode === 'replace') {
+      history.replaceState({ floor }, '', url);
+      return;
+    }
+    history.pushState({ floor }, '', url);
+  };
+
+  const renderUnavailable = (floor) => {
+    mapContainer.innerHTML = `
+      <div class="map-placeholder">
+        <p class="map-placeholder-title">${getFloorLabel(floor)} のマップは準備中です</p>
+        <p class="map-placeholder-text">現在公開されている他フロアのマップをご確認ください。</p>
+      </div>
+    `;
+    resetZoom();
+    mapStatus.textContent = `${getFloorLabel(floor)} は準備中です。`;
+  };
+
+  const renderError = (floor) => {
+    mapContainer.innerHTML = `
+      <div class="map-placeholder map-placeholder-error">
+        <p class="map-placeholder-title">${getFloorLabel(floor)} のマップを読み込めませんでした</p>
+        <p class="map-placeholder-text">時間をおいて再度お試しください。</p>
+      </div>
+    `;
+    resetZoom();
+    mapStatus.textContent = `${getFloorLabel(floor)} の読み込みに失敗しました。`;
+  };
+
+  const renderFloor = async (floor, historyMode = 'push') => {
+    if (!mapContainer || !mapStatus || !floorState.has(floor)) return;
+
+    currentFloor = floor;
+    setActiveButton(floor);
+    updateHistory(floor, historyMode);
+
+    if (!floorState.get(floor)?.available) {
+      renderUnavailable(floor);
+      return;
+    }
+
+    mapStatus.textContent = `${getFloorLabel(floor)} を読み込み中...`;
+    try {
+      const response = await fetch(`/maps/floor-${floor}.svg`);
+      if (!response.ok) {
+        throw new Error(`Failed to load floor map: ${floor}`);
+      }
+      const svg = await response.text();
+      mapContainer.innerHTML = `<div class="map-canvas">${svg}</div>`;
+      resetZoom();
+      mapStatus.textContent = `${getFloorLabel(floor)} を表示中`;
+    } catch {
+      renderError(floor);
+    }
+  };
+
+  buttons.forEach((button) => {
+    button.addEventListener('click', () => {
+      const floor = button.dataset.floor;
+      if (!floor || floor === currentFloor) return;
+      renderFloor(normalizeFloor(floor));
+    });
+  });
+
+  window.addEventListener('popstate', () => {
+    const floor = normalizeFloor(new URLSearchParams(location.search).get('floor'));
+    if (floor === currentFloor) return;
+    renderFloor(floor, 'none');
+  });
+
+  zoomInButton?.addEventListener('click', () => {
+    setZoom(zoomLevel + ZOOM_STEP);
+  });
+
+  zoomOutButton?.addEventListener('click', () => {
+    setZoom(zoomLevel - ZOOM_STEP);
+  });
+
+  zoomResetButton?.addEventListener('click', () => {
+    resetZoom();
+  });
+
+  mapContainer?.addEventListener(
+    'wheel',
+    (event) => {
+      if (!event.ctrlKey && !event.metaKey) return;
+      event.preventDefault();
+      setZoom(zoomLevel + (event.deltaY < 0 ? ZOOM_STEP / 2 : -ZOOM_STEP / 2));
+    },
+    { passive: false }
+  );
+
+  mapContainer?.addEventListener(
+    'touchstart',
+    (event) => {
+      if (event.touches.length !== 2) return;
+      event.preventDefault();
+      pinchStartDistance = getTouchDistance(event.touches);
+      pinchStartZoom = zoomLevel;
+    },
+    { passive: false }
+  );
+
+  mapContainer?.addEventListener(
+    'touchmove',
+    (event) => {
+      if (event.touches.length !== 2 || pinchStartDistance === null) return;
+      event.preventDefault();
+      const nextDistance = getTouchDistance(event.touches);
+      if (pinchStartDistance <= 0) return;
+      setZoom(pinchStartZoom * (nextDistance / pinchStartDistance));
+    },
+    { passive: false }
+  );
+
+  mapContainer?.addEventListener('touchend', (event) => {
+    if (event.touches.length < 2) {
+      pinchStartDistance = null;
+    }
+  });
+
+  mapContainer?.addEventListener('touchcancel', () => {
+    pinchStartDistance = null;
+  });
+
+  const preventGesture = (event) => {
+    event.preventDefault();
+  };
+  mapContainer?.addEventListener('gesturestart', preventGesture);
+  mapContainer?.addEventListener('gesturechange', preventGesture);
+  mapContainer?.addEventListener('gestureend', preventGesture);
+
+  mapContainer?.addEventListener('mousedown', (event) => {
+    if (event.button !== 0) return;
+    isMousePanning = true;
+    panStartX = event.clientX;
+    panStartY = event.clientY;
+    panStartScrollLeft = mapContainer.scrollLeft;
+    panStartScrollTop = mapContainer.scrollTop;
+    mapContainer.classList.add('is-dragging');
+  });
+
+  window.addEventListener('mousemove', (event) => {
+    if (!isMousePanning || !mapContainer) return;
+    event.preventDefault();
+    const deltaX = event.clientX - panStartX;
+    const deltaY = event.clientY - panStartY;
+    mapContainer.scrollLeft = panStartScrollLeft - deltaX;
+    mapContainer.scrollTop = panStartScrollTop - deltaY;
+  });
+
+  window.addEventListener('mouseup', () => {
+    if (!isMousePanning || !mapContainer) return;
+    isMousePanning = false;
+    mapContainer.classList.remove('is-dragging');
+  });
+
+  renderFloor(currentFloor, 'replace');
+</script>
+
+<style>
+  .page-title {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: 0.96px;
+  }
+
+  .map-full-section {
+    width: 100vw;
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
+  }
+
+  .map-shell {
+    border-top: 1px solid #f2d9e1;
+    border-bottom: 1px solid #f2d9e1;
+    background: #fff;
+  }
+
+  .floor-tabs {
+    position: fixed;
+    left: 16px;
+    bottom: calc(16px + env(safe-area-inset-bottom));
+    z-index: 50;
+    display: grid;
+    gap: 8px;
+    padding: 10px;
+    border: 1px solid #f2d9e1;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 8px 24px rgba(54, 23, 34, 0.2);
+    backdrop-filter: blur(4px);
+  }
+
+  .floor-tab {
+    min-height: 52px;
+    min-width: 80px;
+    padding: 8px;
+    border: 1px solid #f2d9e1;
+    border-radius: 10px;
+    background: #fff6f8;
+    color: #6a434f;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.64px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  }
+
+  .floor-tab.active {
+    background: var(--wakabasai-red);
+    border-color: var(--wakabasai-red);
+    color: #fff;
+  }
+
+  .floor-tab.is-unavailable:not(.active) {
+    color: #896d76;
+  }
+
+  .floor-tab-meta {
+    display: block;
+    margin-top: 2px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+  }
+
+  .map-stage {
+    padding: 0;
+  }
+
+  .map-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px 0;
+  }
+
+  .map-hint {
+    margin: 0;
+    font-size: 12px;
+    color: #7b6069;
+  }
+
+  .zoom-controls {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .zoom-btn,
+  .zoom-reset {
+    min-height: 34px;
+    border: 1px solid #f2d9e1;
+    background: #fff;
+    color: #613d47;
+    font-family: inherit;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .zoom-btn {
+    min-width: 34px;
+    border-radius: 8px;
+    font-size: 18px;
+    line-height: 1;
+  }
+
+  .zoom-reset {
+    border-radius: 8px;
+    font-size: 12px;
+    padding: 0 10px;
+    letter-spacing: 0.48px;
+  }
+
+  .zoom-level {
+    min-width: 48px;
+    text-align: center;
+    color: #6a434f;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .map-status {
+    margin: 8px 0 0;
+    padding: 0 16px;
+    min-height: 1.6em;
+    color: #6a434f;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.56px;
+  }
+
+  .map-container {
+    margin-top: 8px;
+    height: clamp(360px, 78dvh, 720px);
+    overflow: auto;
+    border-top: 1px solid #f2d9e1;
+    background: #fff;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-x pan-y;
+    overscroll-behavior: contain;
+    cursor: grab;
+  }
+
+  .map-container.is-dragging {
+    cursor: grabbing;
+    user-select: none;
+  }
+
+  .map-canvas {
+    min-width: 100%;
+  }
+
+  .map-canvas :global(svg) {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .map-placeholder {
+    min-height: 0;
+    height: 100%;
+    display: grid;
+    place-items: center;
+    align-content: center;
+    padding: 16px;
+    text-align: center;
+    gap: 8px;
+    background: #fff9fb;
+  }
+
+  .map-placeholder-title {
+    margin: 0;
+    color: #5c3e47;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.72px;
+  }
+
+  .map-placeholder-text {
+    margin: 0;
+    color: #7f6970;
+    font-size: 14px;
+    letter-spacing: 0.56px;
+  }
+
+  .map-placeholder-error {
+    background: #fff4f7;
+  }
+
+  @media (max-width: 767px) {
+    .page-title {
+      font-size: 24px;
+    }
+
+    .floor-tabs {
+      left: 10px;
+      bottom: calc(10px + env(safe-area-inset-bottom));
+      gap: 6px;
+      padding: 8px;
+    }
+
+    .floor-tab {
+      min-height: 48px;
+      min-width: 72px;
+      font-size: 13px;
+      letter-spacing: 0.56px;
+    }
+
+    .map-stage {
+      padding: 0;
+    }
+
+    .map-toolbar {
+      padding: 10px 10px 0;
+      gap: 8px;
+    }
+
+    .zoom-controls {
+      width: 100%;
+      justify-content: flex-start;
+    }
+
+    .map-status {
+      padding: 0 10px;
+    }
+
+    .map-container {
+      height: clamp(280px, 62dvh, 560px);
+    }
+  }
+</style>
