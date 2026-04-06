@@ -1,5 +1,5 @@
 <svg width="1216" height="786" viewBox="0 0 1216 786" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g id="map-B2F">
+<g id="floor-B2">
 <rect id="bg" width="1216" height="786" fill="white"/>
 <line id="Line 7" x1="60.5" y1="340" x2="60.5" y2="617" stroke="black"/>
 <line id="Line 8" x1="352" y1="49.5" x2="782" y2="49.5" stroke="black"/>
@@ -22,12 +22,12 @@
 <line id="Line 29" x1="618.525" y1="568.155" x2="590.51" y2="482.16" stroke="black"/>
 <line id="Line 18" x1="490.5" y1="617" x2="490.5" y2="756" stroke="black"/>
 <g id="elevator">
-<path d="M60 617H131V688H60V617Z" fill="#B4B4B4"/>
-<path d="M60 617H131V688H60V617Z" fill="#B4B4B4"/>
-<path d="M60 617H131V688H60V617Z" fill="#B4B4B4"/>
-<path d="M60 617H131V688H60V617Z" fill="#B4B4B4"/>
+<path d="M60 619H131V690H60V619Z" fill="#CDCDCD"/>
+<path d="M60 619H131V690H60V619Z" fill="#CDCDCD"/>
+<path d="M60 619H131V690H60V619Z" fill="#CDCDCD"/>
+<path d="M60 619H131V690H60V619Z" fill="#CDCDCD"/>
 </g>
-<rect id="toilet" x="213" y="617" width="171" height="122" fill="#B4B4B4"/>
+<rect id="toilet" x="213" y="619" width="171" height="122" fill="#CDCDCD"/>
 <rect id="circle-booth-1" x="679.053" y="174" width="65.9845" height="55.2418" transform="rotate(48 679.053 174)" fill="#FA9E9E"/>
 <rect id="circle-booth-2" x="723.053" y="223" width="65.9845" height="55.2418" transform="rotate(48 723.053 223)" fill="#FA9E9E"/>
 <rect id="circle-booth-3" x="767.053" y="272" width="65.9845" height="55.2418" transform="rotate(48 767.053 272)" fill="#FA9E9E"/>
@@ -35,7 +35,9 @@
 <rect id="circle-booth-5" x="630" y="400" width="65.9845" height="55.2418" fill="#FA9E9E"/>
 <rect id="circle-booth-6" x="564" y="400" width="65.9845" height="55.2418" fill="#FA9E9E"/>
 <rect id="circle-booth-7" x="270" y="503" width="65.9845" height="55.2418" fill="#FA9E9E"/>
+<rect id="booth-kitchen" x="498" y="619" width="120" height="130" fill="#FA9E9E"/>
 <rect id="circle-booth-8" x="501" y="67" width="65.9845" height="55.2418" fill="#FA9E9E"/>
+<path id="booth-takiplazastage" d="M789 50.5L941.5 50.5L968 86.75L849 123L789 50.5Z" fill="#D889F8"/>
 <rect id="circle-booth-9" x="435" y="67" width="65.9845" height="55.2418" fill="#FA9E9E"/>
 <rect id="circle-booth-10" x="366" y="187.984" width="65.9845" height="55.2418" transform="rotate(-90 366 187.984)" fill="#FA9E9E"/>
 <rect id="circle-booth-11" x="366" y="253.984" width="65.9845" height="55.2418" transform="rotate(-90 366 253.984)" fill="#FA9E9E"/>
@@ -47,5 +49,10 @@
 <rect id="circle-booth-17" x="65" y="517.984" width="65.9845" height="55.2418" transform="rotate(-90 65 517.984)" fill="#FA9E9E"/>
 <rect id="circle-booth-18" x="138" y="503" width="65.9845" height="55.2418" fill="#FA9E9E"/>
 <rect id="circle-booth-19" x="204" y="503" width="65.9845" height="55.2418" fill="#FA9E9E"/>
+<path id="B1F" d="M877.84 280.78C877.84 282.96 876.34 285 873.28 285H866.84V270.4H873.16C875.18 270.4 877.2 271.44 877.2 273.98C877.2 276.22 875.66 276.9 875.02 277.18C875.68 277.34 877.84 277.9 877.84 280.78ZM874.88 274.36C874.88 272.78 873.6 272.4 872.5 272.4H869.06V276.34H872.5C873.82 276.34 874.88 275.82 874.88 274.36ZM875.54 280.64C875.54 279.34 874.64 278.34 873 278.34H869.06V283H873C874.5 283 875.54 282.14 875.54 280.64ZM887.511 285H885.391V274.56H882.271V273.16C885.411 273.02 885.851 271.48 886.131 270.4H887.511V285ZM904.585 272.4H896.865V276.5H903.585V278.5H896.865V285H894.645V270.4H904.585V272.4Z" fill="black"/>
+<g id="arrows">
+<path id="Vector" d="M852.035 246.04L835.157 244.266L835.475 241.242L849.329 242.698L850.785 228.844L853.808 229.162L852.035 246.04Z" fill="#1F1F1F"/>
+<path id="Vector_2" d="M858.548 254.083L841.67 252.309L841.988 249.285L855.842 250.741L857.298 236.888L860.322 237.206L858.548 254.083Z" fill="#1F1F1F"/>
+</g>
 </g>
 </svg>

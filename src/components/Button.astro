@@ -4,12 +4,14 @@ interface Props {
     href?: string;
     class?: string;
     style?: "filled" | "outlined";
+    target?: "_blank" | "_self" | "_parent" | "_top";
+    rel?: string;
 }
 
-const { text, href, class: className, style = "filled" } = Astro.props as Props;
+const { text, href, class: className, style = "filled", target, rel } = Astro.props as Props;
 ---
 {href
-    ? <a class:list={["btn", style, className]} href={href}>{text}</a>
+    ? <a class:list={["btn", style, className]} href={href} target={target} rel={rel}>{text}</a>
     : <button class:list={["btn", style, className]}>{text}</button>
 }
 

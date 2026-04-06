@@ -1,0 +1,105 @@
+---
+interface FaqLink {
+  label: string;
+  href: string;
+}
+
+interface FaqItem {
+  question: string;
+  answer: string;
+  links?: FaqLink[];
+}
+
+interface Props {
+  items: FaqItem[];
+}
+
+const { items } = Astro.props as Props;
+---
+
+<ul class="faq-list">
+  {items.map((item) => (
+    <li class="faq-item">
+      <details>
+        <summary>{item.question}</summary>
+        <div class="faq-answer">
+          <p class="text-body">{item.answer}</p>
+          {item.links && item.links.length > 0 && (
+            <div class="faq-links">
+              {item.links.map((link) => (
+                <a href={link.href}>{link.label}</a>
+              ))}
+            </div>
+          )}
+        </div>
+      </details>
+    </li>
+  ))}
+</ul>
+
+<style>
+  .faq-list {
+    margin: 20px 0 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid #e8d9df;
+  }
+
+  .faq-item {
+    border-bottom: 1px solid #e8d9df;
+  }
+
+  .faq-item details {
+    background: #fff;
+  }
+
+  .faq-item summary {
+    cursor: pointer;
+    padding: 14px 6px;
+    color: #3f3333;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.72px;
+    line-height: 1.6;
+    list-style: none;
+  }
+
+  .faq-item summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .faq-item summary::after {
+    content: '＋';
+    float: right;
+    color: var(--wakabasai-red);
+    font-size: 18px;
+    font-weight: 700;
+  }
+
+  .faq-item details[open] summary::after {
+    content: '−';
+  }
+
+  .faq-answer {
+    padding: 0 6px 14px;
+  }
+
+  .faq-answer p {
+    margin: 0;
+  }
+
+  .faq-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+  }
+
+  .faq-links a {
+    color: var(--wakabasai-red);
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+</style>

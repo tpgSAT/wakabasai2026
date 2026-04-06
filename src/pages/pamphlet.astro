@@ -1,0 +1,21 @@
+---
+import Layout from '@layouts/Layout.astro';
+import Section from '@components/layout/Section.astro';
+import PageTitle from '@components/PageTitle.astro';
+import Button from '@components/Button.astro';
+
+
+import titleSVG from '@assets/pamphlet/title.svg';
+---
+
+<Layout title="マップ">
+  <Section>
+    <PageTitle titleSVG={titleSVG} />
+    <p class="text-body">
+      若葉祭2026のパンフレットはこちらからダウンロードできます。また、当日は会場内受付でも配布予定です。
+    </p>
+  </Section>
+    <Section>
+        <Button href="/pamphlet.pdf" text="パンフレットをダウンロード" target="_blank" rel="noopener noreferrer" />
+    </Section>
+</Layout>
