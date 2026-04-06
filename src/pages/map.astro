@@ -809,6 +809,8 @@ for (const exhibitor of exhibitors) {
 
   .map-canvas {
     min-width: 100%;
+    padding: clamp(32px, 8vw, 120px);
+    box-sizing: border-box;
   }
 
   .map-canvas :global(svg) {
@@ -1050,6 +1052,10 @@ for (const exhibitor of exhibitors) {
 
     .map-container {
       height: clamp(280px, 62dvh, 560px);
+    }
+
+    .map-canvas {
+      padding: clamp(24px, 7vw, 52px);
     }
 
     .booth-modal {
