@@ -2,6 +2,11 @@
 <g id="floor-2">
 <rect id="image 3" x="353" width="757" height="786" fill="url(#pattern0_229_88)"/>
 <rect id="bg" width="1216" height="786" fill="white"/>
+<path id="1F" d="M726.776 393H725.08V384.648H722.584V383.528C725.096 383.416 725.448 382.184 725.672 381.32H726.776V393ZM739.475 382.92H733.299V386.2H738.675V387.8H733.299V393H731.523V381.32H739.475V382.92Z" fill="black"/>
+<g id="arrows">
+<path id="Vector" d="M731 357.025L721.5 347.275L723.202 345.528L731 353.531L738.798 345.528L740.5 347.275L731 357.025Z" fill="#1F1F1F"/>
+<path id="Vector_2" d="M731 365.434L721.5 355.684L723.202 353.938L731 361.941L738.798 353.938L740.5 355.684L731 365.434Z" fill="#1F1F1F"/>
+</g>
 <line id="Line 49" x1="411.5" y1="70" x2="411.5" y2="598" stroke="black"/>
 <line id="Line 50" x1="411" y1="69.5" x2="677" y2="69.5" stroke="black"/>
 <line id="Line 51" x1="676.5" y1="202" x2="676.5" y2="70" stroke="black"/>
@@ -11,12 +16,12 @@
 <line id="Line 54" x1="753" y1="202.5" x2="677" y2="202.5" stroke="black"/>
 <rect id="booth-workshop-1" x="524" y="310" width="116" height="121" fill="#FFA984"/>
 <rect id="booth-workshop-2" x="524" y="431" width="116" height="121" fill="#FFA984"/>
-<rect id="toilet" x="517" y="598" width="179" height="128" fill="#B4B4B4"/>
+<rect id="toilet" x="516" y="601" width="179" height="128" fill="#CDCDCD"/>
 <g id="elevator">
-<path d="M411 598H475V662H411V598Z" fill="#B4B4B4"/>
-<path d="M411 598H475V662H411V598Z" fill="#B4B4B4"/>
-<path d="M411 598H475V662H411V598Z" fill="#B4B4B4"/>
-<path d="M411 598H475V662H411V598Z" fill="#B4B4B4"/>
+<path d="M410 601H474V665H410V601Z" fill="#CDCDCD"/>
+<path d="M410 601H474V665H410V601Z" fill="#CDCDCD"/>
+<path d="M410 601H474V665H410V601Z" fill="#CDCDCD"/>
+<path d="M410 601H474V665H410V601Z" fill="#CDCDCD"/>
 </g>
 </g>
 <defs>

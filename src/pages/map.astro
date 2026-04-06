@@ -110,8 +110,10 @@ for (const exhibitor of exhibitors) {
   const MIN_ZOOM = 0.75;
   const MAX_ZOOM = 4;
   const ZOOM_STEP = 0.25;
-  const DEFAULT_MAP_ZOOM = 1.35;
-  const URL_FOCUS_ZOOM = 2.1;
+  const MOBILE_DEFAULT_MAP_ZOOM = 1.45;
+  const DESKTOP_DEFAULT_MAP_ZOOM = 1.2;
+  const MOBILE_FOCUS_ZOOM = 2.1;
+  const DESKTOP_FOCUS_ZOOM = 1.65;
   const MAP_BG_FILL = '#fff8fb';
   let zoomLevel = 1;
   let pinchStartDistance = null;
@@ -218,6 +220,7 @@ for (const exhibitor of exhibitors) {
       svg.style.maxWidth = 'none';
       svg.style.height = 'auto';
     }
+    requestAnimationFrame(() => renderFacilityLabels());
   };
 
   const setZoom = (nextZoom) => {
@@ -231,7 +234,9 @@ for (const exhibitor of exhibitors) {
   };
 
   const resetZoom = () => {
-    zoomLevel = DEFAULT_MAP_ZOOM;
+    zoomLevel = window.matchMedia('(max-width: 767px)').matches
+      ? MOBILE_DEFAULT_MAP_ZOOM
+      : DESKTOP_DEFAULT_MAP_ZOOM;
     applyZoom();
   };
 
@@ -373,6 +378,107 @@ for (const exhibitor of exhibitors) {
       (el) => el instanceof SVGGraphicsElement
     );
 
+  const renderFacilityLabels = () => {
+    if (!mapContainer) return;
+    const svg = mapContainer.querySelector('svg');
+    if (!(svg instanceof SVGSVGElement)) return;
+
+    svg.querySelector('#facility-label-layer')?.remove();
+    const layer = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    layer.setAttribute('id', 'facility-label-layer');
+    layer.setAttribute('pointer-events', 'none');
+
+    const facilityDefs = [
+      { ids: ['ev', 'elevator'], label: 'エレベーター', icon: '/maps/elevator.svg' },
+      { ids: ['toilet'], label: 'トイレ', icon: '/maps/wc.svg' },
+      { ids: ['reception'], label: '受付', icon: null },
+    ];
+
+    const findTargets = (ids) => {
+      const targets = [];
+      const seen = new Set();
+      ids.forEach((id) => {
+        const selector = `#${id}, [id^="${id}_"], [id^="${id}-"]`;
+        svg.querySelectorAll(selector).forEach((el) => {
+          if (!(el instanceof SVGGraphicsElement)) return;
+          if (seen.has(el)) return;
+          seen.add(el);
+          targets.push(el);
+        });
+      });
+      return targets;
+    };
+
+    facilityDefs.forEach((facility) => {
+      const targets = findTargets(facility.ids);
+      if (!targets.length) return;
+
+      const viewBox = svg.viewBox.baseVal;
+      const svgRect = svg.getBoundingClientRect();
+      const pxPerUnit = viewBox?.width ? svgRect.width / viewBox.width : 1;
+      const unitsPerPx = 1 / Math.max(pxPerUnit, 0.0001);
+      const iconSize = 34 * unitsPerPx;
+      const iconYOffset = 5 * unitsPerPx;
+      const textSize = 10 * unitsPerPx;
+      const textStroke = 1.8 * unitsPerPx;
+      const textY = facility.icon ? 9 * unitsPerPx : 2.5 * unitsPerPx;
+      const labelWidth = Math.max(42, facility.label.length * 10) * unitsPerPx;
+      const labelHeight = 16 * unitsPerPx;
+      const topY = facility.icon
+        ? -(iconSize + iconYOffset)
+        : textY - labelHeight / 2;
+      const bottomY = textY + labelHeight / 2;
+      const markerOffsetY = -((topY + bottomY) / 2);
+
+      targets.forEach((target) => {
+        const bbox = target.getBBox();
+        const cx = bbox.x + bbox.width / 2;
+        const cy = bbox.y + bbox.height / 2;
+
+        const marker = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        marker.setAttribute('class', 'facility-label');
+        marker.setAttribute('transform', `translate(${cx} ${cy + markerOffsetY})`);
+        if (facility.icon) {
+          const icon = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+          icon.setAttribute('href', facility.icon);
+          icon.setAttribute('x', String(-iconSize / 2));
+          icon.setAttribute('y', String(-(iconSize + iconYOffset)));
+          icon.setAttribute('width', String(iconSize));
+          icon.setAttribute('height', String(iconSize));
+          icon.setAttribute('class', 'facility-icon');
+          marker.appendChild(icon);
+        }
+        const labelBg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        labelBg.setAttribute('x', String(-labelWidth / 2));
+        labelBg.setAttribute('y', String(textY - labelHeight / 2));
+        labelBg.setAttribute('width', String(labelWidth));
+        labelBg.setAttribute('height', String(labelHeight));
+        labelBg.setAttribute('rx', String(5 * unitsPerPx));
+        labelBg.setAttribute('fill', '#fff8fb');
+        labelBg.setAttribute('fill-opacity', '0.92');
+        marker.appendChild(labelBg);
+
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('x', '0');
+        text.setAttribute('y', String(textY));
+        text.setAttribute('text-anchor', 'middle');
+        text.setAttribute('dominant-baseline', 'middle');
+        text.setAttribute('class', 'facility-text');
+        text.style.fontSize = `${textSize}px`;
+        text.style.strokeWidth = `${textStroke}px`;
+        text.style.fill = '#3e2e33';
+        text.style.stroke = '#fff8fb';
+        text.style.paintOrder = 'stroke fill';
+        text.style.fontWeight = '800';
+        text.textContent = facility.label;
+        marker.appendChild(text);
+        layer.appendChild(marker);
+      });
+    });
+
+    svg.appendChild(layer);
+  };
+
   const BOOTH_TYPE_STYLE = {
     'サークルブース': { fill: '#ff7ba7', hoverFill: '#ff5b95', stroke: '#ffffff' },
     'ワークショップ企画': { fill: '#ffb36b', hoverFill: '#ff9b42', stroke: '#ffffff' },
@@ -505,8 +611,11 @@ for (const exhibitor of exhibitors) {
     }
     renderBoothSchedule(boothId, detailOverrides);
 
-    if (applyFocusZoom && zoomLevel < URL_FOCUS_ZOOM) {
-      setZoom(URL_FOCUS_ZOOM);
+    const focusZoom = window.matchMedia('(max-width: 767px)').matches
+      ? MOBILE_FOCUS_ZOOM
+      : DESKTOP_FOCUS_ZOOM;
+    if (applyFocusZoom && zoomLevel < focusZoom) {
+      setZoom(focusZoom);
     }
     boothModal?.classList.remove('is-expanded');
     modalTouchStartY = null;
@@ -613,6 +722,7 @@ for (const exhibitor of exhibitors) {
         mapBackground.setAttribute('fill', MAP_BG_FILL);
         mapBackground.style.fill = MAP_BG_FILL;
       }
+      renderFacilityLabels();
       resetZoom();
       bindBoothInteractions();
       if (requestedBoothId) {
@@ -686,6 +796,10 @@ for (const exhibitor of exhibitors) {
 
   mapContainer?.addEventListener('touchcancel', () => {
     pinchStartDistance = null;
+  });
+
+  window.addEventListener('resize', () => {
+    requestAnimationFrame(() => renderFacilityLabels());
   });
 
   const preventGesture = (event) => {
@@ -898,6 +1012,7 @@ for (const exhibitor of exhibitors) {
     padding: clamp(32px, 8vw, 120px);
     padding-top: clamp(64px, 12vw, 170px);
     box-sizing: border-box;
+    position: relative;
   }
 
   .map-canvas :global(svg) {
@@ -908,6 +1023,20 @@ for (const exhibitor of exhibitors) {
 
   .map-canvas :global(#bg) {
     fill: #fff8fb;
+  }
+
+  .map-canvas :global(#facility-label-layer .facility-text) {
+    fill: #3e2e33;
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: 0.6px;
+    paint-order: stroke fill;
+    stroke: #fff8fb;
+    stroke-width: 5px;
+  }
+
+  .map-canvas :global(#facility-label-layer .facility-icon) {
+    opacity: 0.95;
   }
 
   .map-canvas :global(.is-clickable-booth) {
