@@ -172,6 +172,22 @@ for (const exhibitor of exhibitors) {
         description: 'ワークショップ企画の説明文（仮）です。',
       },
     ],
+    [
+      'booth-takiplazastage',
+      {
+        type: 'ステージ企画',
+        title: 'ステージ企画（仮）',
+        description: 'ステージ企画の説明文（仮）です。',
+      },
+    ],
+    [
+      'booth-kitchen',
+      {
+        type: '料理企画',
+        title: '料理企画（仮）',
+        description: '料理企画の説明文（仮）です。',
+      },
+    ],
   ]);
 
   const buildCircleBoothDetails = () =>
@@ -372,7 +388,7 @@ for (const exhibitor of exhibitors) {
   const getBoothElements = () =>
     Array.from(
       mapContainer?.querySelectorAll(
-        '[id^="circle-booth-"], [id^="booth-workshop-"], #booth-boardgame, #booth-pingpong'
+        '[id^="circle-booth-"], [id^="booth-workshop-"], #booth-boardgame, #booth-pingpong, #booth-takiplazastage, #booth-kitchen'
       ) ?? []
     ).filter(
       (el) => el instanceof SVGGraphicsElement
@@ -636,7 +652,7 @@ for (const exhibitor of exhibitors) {
   const bindBoothInteractions = () => {
     const boothElements = Array.from(
       mapContainer?.querySelectorAll(
-        '[id^="circle-booth-"], [id^="booth-workshop-"], #booth-boardgame, #booth-pingpong'
+        '[id^="circle-booth-"], [id^="booth-workshop-"], #booth-boardgame, #booth-pingpong, #booth-takiplazastage, #booth-kitchen'
       ) ?? []
     );
     boothElements.forEach((boothEl) => {
