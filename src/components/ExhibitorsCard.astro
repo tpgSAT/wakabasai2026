@@ -35,9 +35,6 @@ const mapLink = circleBoothLocation ? `/map?floor=B2&booth=circle-booth-${encode
             ))}
         </div>
         <p class="text-body description-short">{shortDescription}</p>
-        {mapLink && (
-            <a class="map-link-btn" href={mapLink}>マップを見る</a>
-        )}
         {(isLong || exhibitorPhoto)&& (
             <>
              <div class="description-full" hidden>
@@ -46,6 +43,9 @@ const mapLink = circleBoothLocation ? `/map?floor=B2&booth=circle-booth-${encode
                  )}
                  <p class="text-body">{exhibitorDescription}</p>
              </div>
+             {mapLink && (
+                <a class="map-link-btn" href={mapLink}>マップを見る</a>
+            )}
              <Button text="詳細を見る" style="outlined" class="details-btn" />
              </>
         )}
