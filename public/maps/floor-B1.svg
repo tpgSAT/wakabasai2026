@@ -1,0 +1,33 @@
+<svg width="1216" height="786" viewBox="0 0 1216 786" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="floor-B1">
+<rect id="bg" width="1216" height="786" fill="white"/>
+<rect id="toilet" x="148" y="596" width="186" height="133" fill="#B4B4B4"/>
+<g id="elevator">
+<path d="M12 596H88V672H12V596Z" fill="#B4B4B4"/>
+<path d="M12 596H88V672H12V596Z" fill="#B4B4B4"/>
+<path d="M12 596H88V672H12V596Z" fill="#B4B4B4"/>
+<path d="M12 596H88V672H12V596Z" fill="#B4B4B4"/>
+</g>
+<line id="Line 32" x1="537.015" y1="482.495" x2="746.015" y2="482.495" stroke="black"/>
+<line id="Line 38" x1="542.377" y1="51.6711" x2="804.377" y2="351.671" stroke="black"/>
+<line id="Line 36" x1="610" y1="410.5" x2="738" y2="410.5" stroke="black"/>
+<line id="Line 37" x1="668" y1="464.5" x2="754" y2="464.5" stroke="black"/>
+<line id="Line 33" x1="564.015" y1="568.495" x2="804.015" y2="568.495" stroke="black"/>
+<line id="Line 34" x1="745.427" y1="482.712" x2="804.427" y2="568.712" stroke="black"/>
+<line id="Line 35" x1="564.54" y1="568.15" x2="536.525" y2="482.155" stroke="black"/>
+<line id="Line 16" x1="12" y1="595.5" x2="1160" y2="595.5" stroke="black"/>
+<line id="Line 21" x1="11.5" y1="596" x2="11.5" y2="569" stroke="black"/>
+<line id="Line 26" x1="363" y1="569.5" x2="12" y2="569.5" stroke="black"/>
+<line id="Line 27" x1="362.5" y1="569" x2="362.5" y2="200" stroke="black"/>
+<line id="Line 28" x1="430" y1="200.5" x2="363" y2="200.5" stroke="black"/>
+<line id="Line 29" x1="429.525" y1="200.156" x2="380.525" y2="51.1562" stroke="black"/>
+<path id="booth-boardgame" d="M405 80H548.579L777 341.299L716.865 393H511.286L405 80Z" fill="#00FFB2"/>
+<line id="Line 30" x1="543" y1="51.5" x2="381" y2="51.5" stroke="black"/>
+<path id="Line 31" d="M724.738 51.3228L1008 388" stroke="black"/>
+<path id="Line 32_2" d="M724.738 51.3228L1008.4 387.663" stroke="black"/>
+<line id="Line 33_2" x1="889" y1="387.5" x2="1008" y2="387.5" stroke="black"/>
+<line id="Line 39" x1="889" y1="473.5" x2="1058" y2="473.5" stroke="black"/>
+<path id="Line 40" d="M1160 595L1056.92 473.992" stroke="black"/>
+<path id="booth-pingpong" d="M889 484H1053L1140 588H889V484Z" fill="#EBFF51"/>
+</g>
+</svg>

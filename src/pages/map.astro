@@ -1,13 +1,17 @@
 ---
 import Layout from '@layouts/Layout.astro';
 import Section from '@components/layout/Section.astro';
+import PageTitle from '@components/PageTitle.astro';
 import { exhibitors } from '@lib/exhibitors';
+
+
+import titleSVG from '@assets/map/title.svg';
 
 const floors = [
   { id: 'B2', label: 'B2F', available: true },
-  { id: 'B1', label: 'B1F', available: false },
+  { id: 'B1', label: 'B1F', available: true },
   { id: '1', label: '1F', available: true },
-  { id: '2', label: '2F', available: false },
+  { id: '2', label: '2F', available: true },
 ];
 
 const eventDays = ['4/10', '4/11'] as const;
@@ -45,9 +49,9 @@ for (const exhibitor of exhibitors) {
 
 <Layout title="マップ">
   <Section>
-    <h1 class="page-title">フロアマップ</h1>
+    <PageTitle titleSVG={titleSVG} />
     <p class="text-body">
-      ボタンを押すとフロアを切り替えられます。URLに現在のフロアが保存されるため、共有や再訪時も同じ階から表示できます。
+      ボタンを押してフロアを切り替えられます。マップは拡大できます（Ctrl + ホイール、ピンチ、PCはドラッグで移動）
     </p>
   </Section>
 
@@ -70,9 +74,6 @@ for (const exhibitor of exhibitors) {
       </div>
 
       <div class="map-stage">
-        <div class="map-toolbar">
-          <p class="map-hint">※ マップは拡大できます（Ctrl + ホイール、ピンチ、PCはドラッグで移動）</p>
-        </div>
         <p id="map-status" class="map-status" aria-live="polite"></p>
         <div id="map-container" class="map-container" role="tabpanel" tabindex="0"></div>
         <dialog id="booth-modal" class="booth-modal">
@@ -83,7 +84,7 @@ for (const exhibitor of exhibitors) {
             <p id="booth-modal-subtitle" class="booth-modal-subtitle"></p>
             <p id="booth-modal-type" class="booth-type-tag"></p>
             <div class="booth-modal-row">
-              <p class="booth-modal-label">開催日ごとの内容</p>
+              <p id="booth-modal-detail-label" class="booth-modal-label">開催日ごとの内容</p>
               <div id="booth-modal-schedule" class="booth-modal-schedule"></div>
             </div>
           </article>
@@ -101,6 +102,7 @@ for (const exhibitor of exhibitors) {
   const boothModalType = document.getElementById('booth-modal-type');
   const boothModalTitle = document.getElementById('booth-modal-title');
   const boothModalSubtitle = document.getElementById('booth-modal-subtitle');
+  const boothModalDetailLabel = document.getElementById('booth-modal-detail-label');
   const boothModalSchedule = document.getElementById('booth-modal-schedule');
   const boothModalCloseButton = boothModal?.querySelector('[data-booth-modal-close]');
 
@@ -130,6 +132,40 @@ for (const exhibitor of exhibitors) {
   };
 
   const DEFAULT_BOOTH_ORGANIZER = '出展団体（調整中）';
+  const STATIC_BOOTH_DETAIL_MAP = new Map([
+    [
+      'booth-boardgame',
+      {
+        type: 'TPG企画',
+        title: 'ボードゲーム紹介',
+        description: 'ボードゲームを楽しみながら交流できるコーナーです！',
+      },
+    ],
+    [
+      'booth-pingpong',
+      {
+        type: 'TPG企画',
+        title: 'キムワイプ卓球',
+        description: '理系なら一度はやってみたい！？キムワイプを使って卓球をしよう！',
+      },
+    ],
+    [
+      'booth-workshop-1',
+      {
+        type: 'ワークショップ企画',
+        title: 'ワークショップ企画（仮）1',
+        description: 'ワークショップ企画の説明文（仮）です。',
+      },
+    ],
+    [
+      'booth-workshop-2',
+      {
+        type: 'ワークショップ企画',
+        title: 'ワークショップ企画（仮）2',
+        description: 'ワークショップ企画の説明文（仮）です。',
+      },
+    ],
+  ]);
 
   const buildCircleBoothDetails = () =>
     Array.from({ length: 19 }, (_, index) => {
@@ -237,22 +273,26 @@ for (const exhibitor of exhibitors) {
 
   const formatBoothLabel = (boothId) => {
     const matched = boothId.match(/^circle-booth-(\d+)$/);
-    if (!matched) return boothId;
+    if (!matched) return STATIC_BOOTH_DETAIL_MAP.get(boothId)?.title ?? boothId;
     return `サークルブース ${matched[1]}`;
   };
 
   const getBoothDetail = (boothId, overrides = {}) => {
-    const preset = boothDetailMap.get(boothId) ?? {};
+    const preset = boothDetailMap.get(boothId) ?? STATIC_BOOTH_DETAIL_MAP.get(boothId) ?? {};
 
     let fallbackType = 'サークルブース';
     if (boothId.startsWith('workshop-')) fallbackType = 'ワークショップ';
     if (boothId.startsWith('boardgame-')) fallbackType = 'ボードゲーム紹介';
     if (boothId.startsWith('kimwipe-')) fallbackType = 'キムワイプ卓球';
+    if (boothId === 'booth-boardgame') fallbackType = 'ボードゲーム紹介';
+    if (boothId === 'booth-pingpong') fallbackType = 'キムワイプ卓球';
+    if (boothId.startsWith('booth-workshop-')) fallbackType = 'ワークショップ企画';
 
     return {
       type: overrides.type ?? preset.type ?? fallbackType,
       title: overrides.title ?? preset.title ?? formatBoothLabel(boothId),
       organizer: overrides.organizer ?? preset.organizer ?? DEFAULT_BOOTH_ORGANIZER,
+      description: overrides.description ?? preset.description ?? '説明準備中です。',
     };
   };
 
@@ -282,6 +322,16 @@ for (const exhibitor of exhibitors) {
       return;
     }
 
+    if (!boothId.startsWith('circle-booth-')) {
+      const boothDetail = getBoothDetail(boothId, overrides);
+      boothModalSchedule.innerHTML = `
+        <div class="booth-schedule-item">
+          <p class="booth-modal-value">${escapeHtml(boothDetail.description)}</p>
+        </div>
+      `;
+      return;
+    }
+
     const dayDetails = getBoothDayDetails(boothId);
     boothModalSchedule.innerHTML = EVENT_DAYS.map((day) => {
       const detail = dayDetails?.[day];
@@ -299,22 +349,40 @@ for (const exhibitor of exhibitors) {
   };
 
   const getBoothElements = () =>
-    Array.from(mapContainer?.querySelectorAll('[id^="circle-booth-"]') ?? []).filter(
+    Array.from(
+      mapContainer?.querySelectorAll(
+        '[id^="circle-booth-"], [id^="booth-workshop-"], #booth-boardgame, #booth-pingpong'
+      ) ?? []
+    ).filter(
       (el) => el instanceof SVGGraphicsElement
     );
 
+  const BOOTH_TYPE_STYLE = {
+    'サークルブース': { fill: '#ff7ba7', hoverFill: '#ff5b95', stroke: '#ffffff' },
+    'ワークショップ企画': { fill: '#ffb36b', hoverFill: '#ff9b42', stroke: '#ffffff' },
+    ワークショップ: { fill: '#ffb36b', hoverFill: '#ff9b42', stroke: '#ffffff' },
+    TPG企画: { fill: '#7ddf8f', hoverFill: '#57cc6d', stroke: '#ffffff' },
+    'ボードゲーム紹介': { fill: '#7ddf8f', hoverFill: '#57cc6d', stroke: '#ffffff' },
+    'キムワイプ卓球': { fill: '#7ddf8f', hoverFill: '#57cc6d', stroke: '#ffffff' },
+  };
+
+  const getBoothStyle = (boothEl) =>
+    BOOTH_TYPE_STYLE[boothEl.dataset.boothType ?? ''] ?? BOOTH_TYPE_STYLE['サークルブース'];
+
   const applyDefaultBoothStyle = (boothEl) => {
+    const style = getBoothStyle(boothEl);
     boothEl.style.opacity = '0.96';
-    boothEl.style.fill = '#ff7ba7';
-    boothEl.style.stroke = '#ffffff';
+    boothEl.style.fill = style.fill;
+    boothEl.style.stroke = style.stroke;
     boothEl.style.strokeWidth = '2';
     boothEl.style.filter = '';
   };
 
   const applyHoverBoothStyle = (boothEl) => {
+    const style = getBoothStyle(boothEl);
     boothEl.style.opacity = '1';
-    boothEl.style.fill = '#ff5b95';
-    boothEl.style.stroke = '#ffffff';
+    boothEl.style.fill = style.hoverFill;
+    boothEl.style.stroke = style.stroke;
     boothEl.style.strokeWidth = '2';
   };
 
@@ -373,6 +441,7 @@ for (const exhibitor of exhibitors) {
     boothEl.style.strokeWidth = '3';
     boothEl.style.filter = 'drop-shadow(0 0 10px rgba(249, 0, 75, 0.65))';
     activeBoothId = boothId;
+    const isCircleBooth = boothId.startsWith('circle-booth-');
     const dayDetails = getBoothDayDetails(boothId);
     const dayTitlePairs = EVENT_DAYS.map((day) => ({
       day,
@@ -394,6 +463,9 @@ for (const exhibitor of exhibitors) {
     boothModalType.textContent = detailOverrides.type ?? boothDetail.type;
     boothModalTitle.textContent = modalTitle;
     boothModalSubtitle.textContent = formatBoothLabel(boothId);
+    if (boothModalDetailLabel) {
+      boothModalDetailLabel.textContent = isCircleBooth ? '開催日ごとの内容' : '企画説明';
+    }
     renderBoothSchedule(boothId, detailOverrides);
 
     const bounds = boothEl.getBoundingClientRect();
@@ -416,10 +488,14 @@ for (const exhibitor of exhibitors) {
 
   const bindBoothInteractions = () => {
     const boothElements = Array.from(
-      mapContainer?.querySelectorAll('[id^="circle-booth-"]') ?? []
+      mapContainer?.querySelectorAll(
+        '[id^="circle-booth-"], [id^="booth-workshop-"], #booth-boardgame, #booth-pingpong'
+      ) ?? []
     );
     boothElements.forEach((boothEl) => {
       if (!(boothEl instanceof SVGElement)) return;
+      const boothType = getBoothDetail(boothEl.id).type;
+      boothEl.dataset.boothType = boothType;
       applyDefaultBoothStyle(boothEl);
       boothEl.classList.add('is-clickable-booth');
       boothEl.setAttribute('tabindex', '0');
