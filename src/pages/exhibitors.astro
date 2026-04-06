@@ -36,7 +36,13 @@ const getCircleId = (name: string) => `circle-${encodeURIComponent(name.trim())}
         </div>
         <div class="exhibitor-grid">
             {exhibitors.map((exhibitor, index) => (
-                <div id={getCircleId(exhibitor.exhibitorName)} class="exhibitor-wrapper" data-days={exhibitor.days.join(",")} data-booths={exhibitor.booths.join(",")}>
+                <div
+                    id={getCircleId(exhibitor.exhibitorName)}
+                    class="exhibitor-wrapper"
+                    data-exhibitor-index={String(index + 1)}
+                    data-days={exhibitor.days.join(",")}
+                    data-booths={exhibitor.booths.join(",")}
+                >
                     <ExhibitorsCard key={index} {...exhibitor} />
                 </div>
             ))}
@@ -96,7 +102,20 @@ const getCircleId = (name: string) => `circle-${encodeURIComponent(name.trim())}
     });
 
     const hashTargetId = window.location.hash.slice(1);
-    const hashTarget = hashTargetId ? document.getElementById(hashTargetId) as HTMLElement | null : null;
+    const idParam = urlParams.get('id') ?? '';
+    const indexFromId = Number.parseInt(idParam, 10);
+    const queryTargetRaw = urlParams.get('circle') ?? urlParams.get('exhibitor') ?? (Number.isInteger(indexFromId) ? '' : idParam);
+    const queryTargetId = queryTargetRaw
+        ? (queryTargetRaw.startsWith('circle-')
+            ? queryTargetRaw
+            : `circle-${encodeURIComponent(queryTargetRaw.trim())}`)
+        : '';
+    const targetId = hashTargetId || queryTargetId;
+    const indexTarget =
+        Number.isInteger(indexFromId) && indexFromId > 0
+            ? document.querySelector<HTMLElement>(`.exhibitor-wrapper[data-exhibitor-index="${indexFromId}"]`)
+            : null;
+    const hashTarget = indexTarget ?? (targetId ? document.getElementById(targetId) as HTMLElement | null : null);
     if (hashTarget && !urlParams.get('day')) {
         const targetDays = hashTarget.dataset.days?.split(',') ?? [];
         if (targetDays.includes('4/10')) {
@@ -113,6 +132,14 @@ const getCircleId = (name: string) => `circle-${encodeURIComponent(name.trim())}
     applyFilters();
 
     if (hashTarget) {
+        const full = hashTarget.querySelector('.description-full') as HTMLElement | null;
+        const short = hashTarget.querySelector('.description-short') as HTMLElement | null;
+        const detailsButton = hashTarget.querySelector('.details-btn') as HTMLButtonElement | null;
+        if (full && short && full.hidden) {
+            full.hidden = false;
+            short.hidden = true;
+            if (detailsButton) detailsButton.textContent = '閉じる';
+        }
         hashTarget.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 </script>

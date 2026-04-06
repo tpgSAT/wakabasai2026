@@ -1,4 +1,1093 @@
 ---
-import ComingSoonLayout from '@layouts/ComingSoonLayout.astro';
+import Layout from '@layouts/Layout.astro';
+import Section from '@components/layout/Section.astro';
+import PageTitle from '@components/PageTitle.astro';
+import { exhibitors } from '@lib/exhibitors';
+
+
+import titleSVG from '@assets/map/title.svg';
+
+const floors = [
+  { id: 'B2', label: 'B2F', available: true },
+  { id: 'B1', label: 'B1F', available: true },
+  { id: '1', label: '1F', available: true },
+  { id: '2', label: '2F', available: true },
+];
+
+const eventDays = ['4/10', '4/11'] as const;
+const circleBoothDetailsByBooth = Object.fromEntries(
+  Array.from({ length: 19 }, (_, index) => [
+    `circle-booth-${index + 1}`,
+    Object.fromEntries(eventDays.map((day) => [day, null])) as Record<
+      (typeof eventDays)[number],
+      { type: string; title: string; organizer: string } | null
+    >,
+  ])
+);
+
+for (const exhibitor of exhibitors) {
+  if (!exhibitor.booths.includes('サークルブース')) continue;
+  const location = exhibitor.circleBoothLocation?.trim();
+  if (!location) continue;
+
+  const boothId = `circle-booth-${location}`;
+  const detail = {
+    type: 'サークルブース',
+    title: exhibitor.circleBoothTitle?.trim() || exhibitor.exhibitorName,
+    organizer: exhibitor.exhibitorName,
+  };
+  const activeDays = exhibitor.circleBoothDate?.length ? exhibitor.circleBoothDate : exhibitor.days;
+
+  for (const day of activeDays) {
+    if (!circleBoothDetailsByBooth[boothId]) continue;
+    if (!circleBoothDetailsByBooth[boothId][day]) {
+      circleBoothDetailsByBooth[boothId][day] = detail;
+    }
+  }
+}
 ---
-<ComingSoonLayout />
+
+<Layout title="マップ">
+  <Section>
+    <PageTitle titleSVG={titleSVG} />
+    <p class="text-body">
+      ボタンを押してフロアを切り替えられます。マップは拡大できます（Ctrl + ホイール、ピンチ、PCはドラッグで移動）
+    </p>
+  </Section>
+
+  <section class="map-full-section">
+    <div class="map-shell">
+      <div class="floor-tabs" role="tablist" aria-label="フロア選択">
+        {floors.map((floor) => (
+          <button
+            type="button"
+            class:list={['floor-tab', !floor.available && 'is-unavailable']}
+            role="tab"
+            data-floor-button
+            data-floor={floor.id}
+            data-available={String(floor.available)}
+          >
+            <span>{floor.label}</span>
+            {!floor.available && <span class="floor-tab-meta">準備中</span>}
+          </button>
+        ))}
+      </div>
+
+      <div class="map-stage">
+        <p id="map-status" class="map-status" aria-live="polite"></p>
+        <div id="map-container" class="map-container" role="tabpanel" tabindex="0"></div>
+        <dialog id="booth-modal" class="booth-modal">
+          <article class="booth-modal-card">
+            <div class="booth-modal-handle" aria-hidden="true"></div>
+            <button type="button" class="booth-modal-close" data-booth-modal-close aria-label="閉じる">×</button>
+            <h2 id="booth-modal-title" class="booth-modal-title"></h2>
+            <p id="booth-modal-subtitle" class="booth-modal-subtitle"></p>
+            <p id="booth-modal-type" class="booth-type-tag"></p>
+            <div class="booth-modal-row">
+              <p id="booth-modal-detail-label" class="booth-modal-label">開催日ごとの内容</p>
+              <div id="booth-modal-schedule" class="booth-modal-schedule"></div>
+            </div>
+          </article>
+        </dialog>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<script define:vars={{ circleBoothDetailsByBooth }}>
+  const buttons = Array.from(document.querySelectorAll('[data-floor-button]'));
+  const mapContainer = document.getElementById('map-container');
+  const mapStatus = document.getElementById('map-status');
+  const boothModal = document.getElementById('booth-modal');
+  const boothModalType = document.getElementById('booth-modal-type');
+  const boothModalTitle = document.getElementById('booth-modal-title');
+  const boothModalSubtitle = document.getElementById('booth-modal-subtitle');
+  const boothModalDetailLabel = document.getElementById('booth-modal-detail-label');
+  const boothModalSchedule = document.getElementById('booth-modal-schedule');
+  const boothModalCloseButton = boothModal?.querySelector('[data-booth-modal-close]');
+
+  const MIN_ZOOM = 0.75;
+  const MAX_ZOOM = 4;
+  const ZOOM_STEP = 0.25;
+  let zoomLevel = 1;
+  let pinchStartDistance = null;
+  let pinchStartZoom = 1;
+  let isMousePanning = false;
+  let panStartX = 0;
+  let panStartY = 0;
+  let panStartScrollLeft = 0;
+  let panStartScrollTop = 0;
+  let activeBoothId = null;
+  const EVENT_DAYS = ['4/10', '4/11'];
+  const DAY_LABEL = {
+    '4/10': '4/10(金)',
+    '4/11': '4/11(土)',
+  };
+  const urlParams = new URLSearchParams(location.search);
+  let requestedBoothId = urlParams.get('booth');
+  const requestedBoothInfo = {
+    type: urlParams.get('boothType'),
+    title: urlParams.get('boothTitle'),
+    organizer: urlParams.get('boothOrganizer'),
+  };
+
+  const DEFAULT_BOOTH_ORGANIZER = '出展団体（調整中）';
+  const STATIC_BOOTH_DETAIL_MAP = new Map([
+    [
+      'booth-boardgame',
+      {
+        type: 'TPG企画',
+        title: 'ボードゲーム紹介',
+        description: 'ボードゲームを楽しみながら交流できるコーナーです！',
+      },
+    ],
+    [
+      'booth-pingpong',
+      {
+        type: 'TPG企画',
+        title: 'キムワイプ卓球',
+        description: '理系なら一度はやってみたい！？キムワイプを使って卓球をしよう！',
+      },
+    ],
+    [
+      'booth-workshop-1',
+      {
+        type: 'ワークショップ企画',
+        title: 'ワークショップ企画（仮）1',
+        description: 'ワークショップ企画の説明文（仮）です。',
+      },
+    ],
+    [
+      'booth-workshop-2',
+      {
+        type: 'ワークショップ企画',
+        title: 'ワークショップ企画（仮）2',
+        description: 'ワークショップ企画の説明文（仮）です。',
+      },
+    ],
+  ]);
+
+  const buildCircleBoothDetails = () =>
+    Array.from({ length: 19 }, (_, index) => {
+      const boothNo = index + 1;
+      const id = `circle-booth-${boothNo}`;
+      const dayDetails = circleBoothDetailsByBooth?.[id] ?? {};
+      const featured = dayDetails['4/10'] ?? dayDetails['4/11'] ?? null;
+      return [
+        id,
+        {
+          type: featured?.type ?? 'サークルブース',
+          title: featured?.title ?? `サークルブース ${boothNo}`,
+          organizer: featured?.organizer ?? DEFAULT_BOOTH_ORGANIZER,
+        },
+      ];
+    });
+  const boothDetailMap = new Map(buildCircleBoothDetails());
+
+  const floorState = new Map(
+    buttons.map((button) => [
+      button.dataset.floor,
+      { available: button.dataset.available === 'true' },
+    ])
+  );
+
+  const floorOrder = buttons
+    .map((button) => button.dataset.floor)
+    .filter((floor) => typeof floor === 'string');
+  const firstAvailableFloor =
+    floorOrder.find((floor) => floorState.get(floor)?.available) ?? floorOrder[0];
+
+  const normalizeFloor = (value) => (floorState.has(value) ? value : firstAvailableFloor);
+
+  const getFloorLabel = (floor) => {
+    const button = buttons.find((item) => item.dataset.floor === floor);
+    return button ? button.querySelector('span')?.textContent ?? `${floor}F` : `${floor}F`;
+  };
+
+  const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+
+  const applyZoom = () => {
+    const svg = mapContainer?.querySelector('svg');
+    if (svg instanceof SVGElement) {
+      svg.style.width = `${Math.round(zoomLevel * 100)}%`;
+      svg.style.maxWidth = 'none';
+      svg.style.height = 'auto';
+    }
+  };
+
+  const setZoom = (nextZoom) => {
+    zoomLevel = clamp(Math.round(nextZoom * 100) / 100, MIN_ZOOM, MAX_ZOOM);
+    applyZoom();
+  };
+
+  const getTouchDistance = (touches) => {
+    const [touchA, touchB] = touches;
+    return Math.hypot(touchA.clientX - touchB.clientX, touchA.clientY - touchB.clientY);
+  };
+
+  const resetZoom = () => {
+    zoomLevel = 1;
+    applyZoom();
+  };
+
+  let currentFloor = normalizeFloor(new URLSearchParams(location.search).get('floor'));
+
+  const setActiveButton = (floor) => {
+    buttons.forEach((button) => {
+      const isActive = button.dataset.floor === floor;
+      button.classList.toggle('active', isActive);
+      button.setAttribute('aria-selected', String(isActive));
+      button.tabIndex = isActive ? 0 : -1;
+    });
+  };
+
+  const updateHistory = (floor, mode) => {
+    if (mode === 'none') return;
+
+    const url = new URL(location.href);
+    url.searchParams.set('floor', floor);
+    if (mode === 'replace') {
+      history.replaceState({ floor }, '', url);
+      return;
+    }
+    history.pushState({ floor }, '', url);
+  };
+
+  const updateBoothQuery = (boothId, mode = 'replace') => {
+    const url = new URL(location.href);
+    if (boothId) {
+      url.searchParams.set('booth', boothId);
+    } else {
+      url.searchParams.delete('booth');
+    }
+    url.searchParams.delete('boothType');
+    url.searchParams.delete('boothTitle');
+    url.searchParams.delete('boothOrganizer');
+
+    if (mode === 'push') {
+      history.pushState({}, '', url);
+      return;
+    }
+    history.replaceState({}, '', url);
+  };
+
+  const formatBoothLabel = (boothId) => {
+    const matched = boothId.match(/^circle-booth-(\d+)$/);
+    if (!matched) return STATIC_BOOTH_DETAIL_MAP.get(boothId)?.title ?? boothId;
+    return `サークルブース ${matched[1]}`;
+  };
+
+  const getBoothDetail = (boothId, overrides = {}) => {
+    const preset = boothDetailMap.get(boothId) ?? STATIC_BOOTH_DETAIL_MAP.get(boothId) ?? {};
+
+    let fallbackType = 'サークルブース';
+    if (boothId.startsWith('workshop-')) fallbackType = 'ワークショップ';
+    if (boothId.startsWith('boardgame-')) fallbackType = 'ボードゲーム紹介';
+    if (boothId.startsWith('kimwipe-')) fallbackType = 'キムワイプ卓球';
+    if (boothId === 'booth-boardgame') fallbackType = 'ボードゲーム紹介';
+    if (boothId === 'booth-pingpong') fallbackType = 'キムワイプ卓球';
+    if (boothId.startsWith('booth-workshop-')) fallbackType = 'ワークショップ企画';
+
+    return {
+      type: overrides.type ?? preset.type ?? fallbackType,
+      title: overrides.title ?? preset.title ?? formatBoothLabel(boothId),
+      organizer: overrides.organizer ?? preset.organizer ?? DEFAULT_BOOTH_ORGANIZER,
+      description: overrides.description ?? preset.description ?? '説明準備中です。',
+    };
+  };
+
+  const getBoothDayDetails = (boothId) => circleBoothDetailsByBooth?.[boothId] ?? {};
+
+  const escapeHtml = (value) =>
+    String(value)
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#39;');
+
+  const renderBoothSchedule = (boothId, overrides = {}) => {
+    if (!boothModalSchedule) return;
+
+    if (overrides.title || overrides.organizer) {
+      const title = escapeHtml(overrides.title ?? formatBoothLabel(boothId));
+      const organizer = escapeHtml(overrides.organizer ?? DEFAULT_BOOTH_ORGANIZER);
+      boothModalSchedule.innerHTML = `
+        <div class="booth-schedule-item">
+          <p class="booth-schedule-title">${title}</p>
+          <p class="booth-schedule-day">展示情報</p>
+          <p class="booth-schedule-organizer">運営: ${organizer}</p>
+        </div>
+      `;
+      return;
+    }
+
+    if (!boothId.startsWith('circle-booth-')) {
+      const boothDetail = getBoothDetail(boothId, overrides);
+      boothModalSchedule.innerHTML = `
+        <div class="booth-schedule-item">
+          <p class="booth-modal-value">${escapeHtml(boothDetail.description)}</p>
+        </div>
+      `;
+      return;
+    }
+
+    const dayDetails = getBoothDayDetails(boothId);
+    boothModalSchedule.innerHTML = EVENT_DAYS.map((day) => {
+      const detail = dayDetails?.[day];
+      const title = escapeHtml(detail?.title ?? '展示調整中');
+      const organizer = escapeHtml(detail?.organizer ?? DEFAULT_BOOTH_ORGANIZER);
+      const dayLabel = escapeHtml(DAY_LABEL[day] ?? day);
+      return `
+        <div class="booth-schedule-item">
+          <p class="booth-schedule-title">${title}</p>
+          <p class="booth-schedule-day">${dayLabel}</p>
+          <p class="booth-schedule-organizer">運営: ${organizer}</p>
+        </div>
+      `;
+    }).join('');
+  };
+
+  const getBoothElements = () =>
+    Array.from(
+      mapContainer?.querySelectorAll(
+        '[id^="circle-booth-"], [id^="booth-workshop-"], #booth-boardgame, #booth-pingpong'
+      ) ?? []
+    ).filter(
+      (el) => el instanceof SVGGraphicsElement
+    );
+
+  const BOOTH_TYPE_STYLE = {
+    'サークルブース': { fill: '#ff7ba7', hoverFill: '#ff5b95', stroke: '#ffffff' },
+    'ワークショップ企画': { fill: '#ffb36b', hoverFill: '#ff9b42', stroke: '#ffffff' },
+    ワークショップ: { fill: '#ffb36b', hoverFill: '#ff9b42', stroke: '#ffffff' },
+    TPG企画: { fill: '#7ddf8f', hoverFill: '#57cc6d', stroke: '#ffffff' },
+    'ボードゲーム紹介': { fill: '#7ddf8f', hoverFill: '#57cc6d', stroke: '#ffffff' },
+    'キムワイプ卓球': { fill: '#7ddf8f', hoverFill: '#57cc6d', stroke: '#ffffff' },
+  };
+
+  const getBoothStyle = (boothEl) =>
+    BOOTH_TYPE_STYLE[boothEl.dataset.boothType ?? ''] ?? BOOTH_TYPE_STYLE['サークルブース'];
+
+  const applyDefaultBoothStyle = (boothEl) => {
+    const style = getBoothStyle(boothEl);
+    boothEl.style.opacity = '0.96';
+    boothEl.style.fill = style.fill;
+    boothEl.style.stroke = style.stroke;
+    boothEl.style.strokeWidth = '2';
+    boothEl.style.filter = '';
+  };
+
+  const applyHoverBoothStyle = (boothEl) => {
+    const style = getBoothStyle(boothEl);
+    boothEl.style.opacity = '1';
+    boothEl.style.fill = style.hoverFill;
+    boothEl.style.stroke = style.stroke;
+    boothEl.style.strokeWidth = '2';
+  };
+
+  const clearActiveBooth = () => {
+    const mapCanvas = mapContainer?.querySelector('.map-canvas');
+    mapCanvas?.classList.remove('has-active-booth');
+    getBoothElements().forEach((el) => {
+      el.classList.remove('is-active-booth');
+      applyDefaultBoothStyle(el);
+    });
+    if (!activeBoothId) return;
+    const activeEl = mapContainer?.querySelector(`#${activeBoothId}`);
+    activeEl?.classList.remove('is-active-booth');
+    activeBoothId = null;
+  };
+
+  const closeBoothModal = ({ clearQuery = true } = {}) => {
+    if (boothModal?.open) {
+      boothModal.close();
+    }
+    clearActiveBooth();
+    if (clearQuery) {
+      updateBoothQuery(null, 'replace');
+    }
+  };
+
+  const openBoothModal = (boothId, { syncUrl = true, detailOverrides = {} } = {}) => {
+    if (
+      !mapContainer ||
+      !boothModal ||
+      !boothModalType ||
+      !boothModalTitle ||
+      !boothModalSubtitle ||
+      !boothModalSchedule
+    ) {
+      return;
+    }
+    const boothEl = mapContainer.querySelector(`#${boothId}`);
+    if (!(boothEl instanceof SVGGraphicsElement)) {
+      mapStatus.textContent = `指定されたブース (${boothId}) は見つかりませんでした。`;
+      return;
+    }
+
+    const boothDetail = getBoothDetail(boothId, detailOverrides);
+    clearActiveBooth();
+    const mapCanvas = mapContainer.querySelector('.map-canvas');
+    mapCanvas?.classList.add('has-active-booth');
+    getBoothElements().forEach((el) => {
+      el.style.opacity = '0.35';
+      el.style.filter = '';
+    });
+    boothEl.classList.add('is-active-booth');
+    boothEl.style.opacity = '1';
+    boothEl.style.fill = '#f9004b';
+    boothEl.style.stroke = '#91002f';
+    boothEl.style.strokeWidth = '3';
+    boothEl.style.filter = 'drop-shadow(0 0 10px rgba(249, 0, 75, 0.65))';
+    activeBoothId = boothId;
+    const isCircleBooth = boothId.startsWith('circle-booth-');
+    const dayDetails = getBoothDayDetails(boothId);
+    const dayTitlePairs = EVENT_DAYS.map((day) => ({
+      day,
+      title: dayDetails?.[day]?.title ?? null,
+    })).filter((item) => item.title);
+    const uniqueTitles = Array.from(new Set(dayTitlePairs.map((item) => item.title)));
+    const dayTitleText =
+      uniqueTitles.length === 1
+        ? uniqueTitles[0]
+        : dayTitlePairs.length
+          ? dayTitlePairs.map((item) => `${DAY_LABEL[item.day]} ${item.title}`).join(' / ')
+          : null;
+    const modalTitle =
+      detailOverrides.title ??
+      dayTitleText ??
+      boothDetail.title ??
+      formatBoothLabel(boothId);
+
+    boothModalType.textContent = detailOverrides.type ?? boothDetail.type;
+    boothModalTitle.textContent = modalTitle;
+    boothModalSubtitle.textContent = formatBoothLabel(boothId);
+    if (boothModalDetailLabel) {
+      boothModalDetailLabel.textContent = isCircleBooth ? '開催日ごとの内容' : '企画説明';
+    }
+    renderBoothSchedule(boothId, detailOverrides);
+
+    const bounds = boothEl.getBoundingClientRect();
+    const containerBounds = mapContainer.getBoundingClientRect();
+    const offsetX = bounds.left - containerBounds.left + mapContainer.scrollLeft;
+    const offsetY = bounds.top - containerBounds.top + mapContainer.scrollTop;
+    mapContainer.scrollTo({
+      left: Math.max(offsetX - mapContainer.clientWidth / 2 + bounds.width / 2, 0),
+      top: Math.max(offsetY - mapContainer.clientHeight / 2 + bounds.height / 2, 0),
+      behavior: 'smooth',
+    });
+
+    if (!boothModal.open) {
+      boothModal.showModal();
+    }
+    if (syncUrl) {
+      updateBoothQuery(boothId, 'replace');
+    }
+  };
+
+  const bindBoothInteractions = () => {
+    const boothElements = Array.from(
+      mapContainer?.querySelectorAll(
+        '[id^="circle-booth-"], [id^="booth-workshop-"], #booth-boardgame, #booth-pingpong'
+      ) ?? []
+    );
+    boothElements.forEach((boothEl) => {
+      if (!(boothEl instanceof SVGElement)) return;
+      const boothType = getBoothDetail(boothEl.id).type;
+      boothEl.dataset.boothType = boothType;
+      applyDefaultBoothStyle(boothEl);
+      boothEl.classList.add('is-clickable-booth');
+      boothEl.setAttribute('tabindex', '0');
+      boothEl.setAttribute('role', 'button');
+      boothEl.setAttribute('aria-label', `${formatBoothLabel(boothEl.id)}を開く`);
+      boothEl.addEventListener('mouseenter', () => {
+        if (boothEl.id === activeBoothId) return;
+        applyHoverBoothStyle(boothEl);
+      });
+      boothEl.addEventListener('mouseleave', () => {
+        if (boothEl.id === activeBoothId) return;
+        applyDefaultBoothStyle(boothEl);
+      });
+      boothEl.addEventListener('focus', () => {
+        if (boothEl.id === activeBoothId) return;
+        applyHoverBoothStyle(boothEl);
+      });
+      boothEl.addEventListener('blur', () => {
+        if (boothEl.id === activeBoothId) return;
+        applyDefaultBoothStyle(boothEl);
+      });
+      boothEl.addEventListener('click', () => openBoothModal(boothEl.id));
+      boothEl.addEventListener('keydown', (event) => {
+        if (event.key !== 'Enter' && event.key !== ' ') return;
+        event.preventDefault();
+        openBoothModal(boothEl.id);
+      });
+    });
+  };
+
+  const renderUnavailable = (floor) => {
+    mapContainer.innerHTML = `
+      <div class="map-placeholder">
+        <p class="map-placeholder-title">${getFloorLabel(floor)} のマップは準備中です</p>
+        <p class="map-placeholder-text">現在公開されている他フロアのマップをご確認ください。</p>
+      </div>
+    `;
+    resetZoom();
+    closeBoothModal({ clearQuery: false });
+    mapStatus.textContent = `${getFloorLabel(floor)} は準備中です。`;
+  };
+
+  const renderError = (floor) => {
+    mapContainer.innerHTML = `
+      <div class="map-placeholder map-placeholder-error">
+        <p class="map-placeholder-title">${getFloorLabel(floor)} のマップを読み込めませんでした</p>
+        <p class="map-placeholder-text">時間をおいて再度お試しください。</p>
+      </div>
+    `;
+    resetZoom();
+    closeBoothModal({ clearQuery: false });
+    mapStatus.textContent = `${getFloorLabel(floor)} の読み込みに失敗しました。`;
+  };
+
+  const renderFloor = async (floor, historyMode = 'push') => {
+    if (!mapContainer || !mapStatus || !floorState.has(floor)) return;
+
+    currentFloor = floor;
+    setActiveButton(floor);
+    updateHistory(floor, historyMode);
+
+    if (!floorState.get(floor)?.available) {
+      renderUnavailable(floor);
+      return;
+    }
+
+    mapStatus.textContent = `${getFloorLabel(floor)} を読み込み中...`;
+    try {
+      const response = await fetch(`/maps/floor-${floor}.svg`);
+      if (!response.ok) {
+        throw new Error(`Failed to load floor map: ${floor}`);
+      }
+      const svg = await response.text();
+      mapContainer.innerHTML = `<div class="map-canvas">${svg}</div>`;
+      resetZoom();
+      bindBoothInteractions();
+      if (requestedBoothId) {
+        openBoothModal(requestedBoothId, {
+          syncUrl: true,
+          detailOverrides: requestedBoothInfo,
+        });
+        requestedBoothId = null;
+      }
+      mapStatus.textContent = `${getFloorLabel(floor)} を表示中`;
+    } catch {
+      renderError(floor);
+    }
+  };
+
+  buttons.forEach((button) => {
+    button.addEventListener('click', () => {
+      const floor = button.dataset.floor;
+      if (!floor || floor === currentFloor) return;
+      renderFloor(normalizeFloor(floor));
+    });
+  });
+
+  window.addEventListener('popstate', () => {
+    const floor = normalizeFloor(new URLSearchParams(location.search).get('floor'));
+    if (floor === currentFloor) return;
+    renderFloor(floor, 'none');
+  });
+
+  mapContainer?.addEventListener(
+    'wheel',
+    (event) => {
+      if (!event.ctrlKey && !event.metaKey) return;
+      event.preventDefault();
+      setZoom(zoomLevel + (event.deltaY < 0 ? ZOOM_STEP / 2 : -ZOOM_STEP / 2));
+    },
+    { passive: false }
+  );
+
+  mapContainer?.addEventListener(
+    'touchstart',
+    (event) => {
+      if (event.touches.length !== 2) return;
+      event.preventDefault();
+      pinchStartDistance = getTouchDistance(event.touches);
+      pinchStartZoom = zoomLevel;
+    },
+    { passive: false }
+  );
+
+  mapContainer?.addEventListener(
+    'touchmove',
+    (event) => {
+      if (event.touches.length !== 2 || pinchStartDistance === null) return;
+      event.preventDefault();
+      const nextDistance = getTouchDistance(event.touches);
+      if (pinchStartDistance <= 0) return;
+      setZoom(pinchStartZoom * (nextDistance / pinchStartDistance));
+    },
+    { passive: false }
+  );
+
+  mapContainer?.addEventListener('touchend', (event) => {
+    if (event.touches.length < 2) {
+      pinchStartDistance = null;
+    }
+  });
+
+  mapContainer?.addEventListener('touchcancel', () => {
+    pinchStartDistance = null;
+  });
+
+  const preventGesture = (event) => {
+    event.preventDefault();
+  };
+  mapContainer?.addEventListener('gesturestart', preventGesture);
+  mapContainer?.addEventListener('gesturechange', preventGesture);
+  mapContainer?.addEventListener('gestureend', preventGesture);
+
+  mapContainer?.addEventListener('mousedown', (event) => {
+    if (event.button !== 0) return;
+    isMousePanning = true;
+    panStartX = event.clientX;
+    panStartY = event.clientY;
+    panStartScrollLeft = mapContainer.scrollLeft;
+    panStartScrollTop = mapContainer.scrollTop;
+    mapContainer.classList.add('is-dragging');
+  });
+
+  window.addEventListener('mousemove', (event) => {
+    if (!isMousePanning || !mapContainer) return;
+    event.preventDefault();
+    const deltaX = event.clientX - panStartX;
+    const deltaY = event.clientY - panStartY;
+    mapContainer.scrollLeft = panStartScrollLeft - deltaX;
+    mapContainer.scrollTop = panStartScrollTop - deltaY;
+  });
+
+  window.addEventListener('mouseup', () => {
+    if (!isMousePanning || !mapContainer) return;
+    isMousePanning = false;
+    mapContainer.classList.remove('is-dragging');
+  });
+
+  boothModalCloseButton?.addEventListener('click', () => {
+    closeBoothModal();
+  });
+
+  boothModal?.addEventListener('click', (event) => {
+    if (event.target === boothModal) {
+      closeBoothModal();
+    }
+  });
+
+  boothModal?.addEventListener('close', () => {
+    clearActiveBooth();
+    updateBoothQuery(null, 'replace');
+  });
+
+  renderFloor(currentFloor, 'replace');
+</script>
+
+<style>
+  .page-title {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: 0.96px;
+  }
+
+  .map-full-section {
+    width: 100vw;
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
+  }
+
+  .map-shell {
+    border-top: 1px solid #f2d9e1;
+    border-bottom: 1px solid #f2d9e1;
+    background: #fff;
+  }
+
+  .floor-tabs {
+    position: fixed;
+    left: 16px;
+    bottom: calc(16px + env(safe-area-inset-bottom));
+    z-index: 50;
+    display: grid;
+    gap: 8px;
+    padding: 10px;
+    border: 1px solid #f2d9e1;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 8px 24px rgba(54, 23, 34, 0.2);
+    backdrop-filter: blur(4px);
+  }
+
+  .floor-tab {
+    min-height: 52px;
+    min-width: 80px;
+    padding: 8px;
+    border: 1px solid #f2d9e1;
+    border-radius: 10px;
+    background: #fff6f8;
+    color: #6a434f;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.64px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  }
+
+  .floor-tab.active {
+    background: var(--wakabasai-red);
+    border-color: var(--wakabasai-red);
+    color: #fff;
+  }
+
+  .floor-tab.is-unavailable:not(.active) {
+    color: #896d76;
+  }
+
+  .floor-tab-meta {
+    display: block;
+    margin-top: 2px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+  }
+
+  .map-stage {
+    padding: 0;
+  }
+
+  .map-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px 0;
+  }
+
+  .map-hint {
+    margin: 0;
+    font-size: 12px;
+    color: #7b6069;
+  }
+
+  .map-status {
+    margin: 8px 0 0;
+    padding: 0 16px;
+    min-height: 1.6em;
+    color: #6a434f;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.56px;
+  }
+
+  .map-container {
+    margin-top: 8px;
+    height: clamp(360px, 78dvh, 720px);
+    overflow: auto;
+    border-top: 1px solid #f2d9e1;
+    background: #fff;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-x pan-y;
+    overscroll-behavior: contain;
+    cursor: grab;
+  }
+
+  .map-container.is-dragging {
+    cursor: grabbing;
+    user-select: none;
+  }
+
+  .map-canvas {
+    min-width: 100%;
+    padding: clamp(32px, 8vw, 120px);
+    box-sizing: border-box;
+  }
+
+  .map-canvas :global(svg) {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .map-canvas :global(.is-clickable-booth) {
+    fill: #ff7ba7;
+    stroke: #ffffff;
+    stroke-width: 2px;
+    opacity: 0.96;
+    cursor: pointer;
+    transition: fill 0.2s ease, opacity 0.2s ease, transform 0.2s ease;
+  }
+
+  .map-canvas :global(.is-clickable-booth:hover) {
+    fill: #ff5b95;
+    opacity: 1;
+  }
+
+  .map-canvas :global(.is-clickable-booth:focus-visible) {
+    fill: #ff5b95;
+    stroke: #7d0d34;
+    stroke-width: 2.5px;
+    opacity: 1;
+  }
+
+  .map-canvas.has-active-booth :global(.is-clickable-booth) {
+    opacity: 0.35;
+  }
+
+  .map-canvas :global(.is-active-booth) {
+    fill: #f9004b !important;
+    stroke: #91002f;
+    stroke-width: 3px;
+    opacity: 1 !important;
+    filter: drop-shadow(0 0 10px rgba(249, 0, 75, 0.65));
+  }
+
+  .map-placeholder {
+    min-height: 0;
+    height: 100%;
+    display: grid;
+    place-items: center;
+    align-content: center;
+    padding: 16px;
+    text-align: center;
+    gap: 8px;
+    background: #fff9fb;
+  }
+
+  .map-placeholder-title {
+    margin: 0;
+    color: #5c3e47;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.72px;
+  }
+
+  .map-placeholder-text {
+    margin: 0;
+    color: #7f6970;
+    font-size: 14px;
+    letter-spacing: 0.56px;
+  }
+
+  .map-placeholder-error {
+    background: #fff4f7;
+  }
+
+  .booth-modal {
+    border: none;
+    padding: 0;
+    width: min(420px, calc(100% - 32px));
+    background: transparent;
+  }
+
+  .booth-modal::backdrop {
+    background: rgba(0, 0, 0, 0.4);
+  }
+
+  .booth-modal-card {
+    position: relative;
+    margin: 0;
+    border: 1px solid #f3d5df;
+    border-radius: 16px;
+    background: #fff;
+    padding: 14px 18px 18px;
+    box-shadow: 0 16px 44px rgba(43, 18, 27, 0.26);
+  }
+
+  .booth-modal-handle {
+    width: 44px;
+    height: 5px;
+    border-radius: 999px;
+    margin: 2px auto 10px;
+    background: #ead4db;
+  }
+
+  .booth-modal-close {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 30px;
+    height: 30px;
+    border: none;
+    border-radius: 999px;
+    background: #f7ecf0;
+    color: #735a62;
+    font-size: 18px;
+    cursor: pointer;
+  }
+
+  .booth-modal-title {
+    margin: 0;
+    color: #3e2e33;
+    font-size: 20px;
+    font-weight: 700;
+    padding-right: 30px;
+    letter-spacing: 1px;
+  }
+
+  .booth-modal-subtitle {
+    margin: 6px 0 0;
+    color: #7d6970;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.48px;
+  }
+
+  .booth-type-tag {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    margin: 10px 0 0;
+    background-color: var(--wakabasai-red);
+    color: #fff;
+    padding: 4px 8px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.48px;
+  }
+
+  .booth-modal-row {
+    margin: 12px 0 0;
+    padding: 8px 10px;
+    border-radius: 10px;
+    background: #fff8fa;
+  }
+
+  .booth-modal-label {
+    margin: 0;
+    color: #7d6970;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.56px;
+  }
+
+  .booth-modal-value {
+    margin: 0;
+    margin-top: 4px;
+    color: #3f3333;
+    font-size: 14px;
+    letter-spacing: 0.56px;
+    line-height: 1.6;
+  }
+
+  .booth-modal-schedule {
+    margin-top: 8px;
+    display: grid;
+    gap: 8px;
+  }
+
+  .booth-schedule-item {
+    padding: 8px;
+    border: 1px solid #f1d9e1;
+    border-radius: 10px;
+    background: #fff;
+  }
+
+  .booth-schedule-title {
+    margin: 0;
+    color: #3f3333;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.56px;
+    line-height: 1.6;
+  }
+
+  .booth-schedule-day {
+    margin: 4px 0 0;
+    color: #7d6970;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+  }
+
+  .booth-schedule-organizer {
+    margin: 4px 0 0;
+    color: #5f4b52;
+    font-size: 12px;
+    letter-spacing: 0.4px;
+    line-height: 1.5;
+  }
+
+  @media (max-width: 767px) {
+    .page-title {
+      font-size: 24px;
+    }
+
+    .floor-tabs {
+      left: 10px;
+      bottom: calc(10px + env(safe-area-inset-bottom));
+      gap: 6px;
+      padding: 8px;
+    }
+
+    .floor-tab {
+      min-height: 48px;
+      min-width: 72px;
+      font-size: 13px;
+      letter-spacing: 0.56px;
+    }
+
+    .map-stage {
+      padding: 0;
+    }
+
+    .map-toolbar {
+      padding: 10px 10px 0;
+      gap: 8px;
+    }
+
+    .map-status {
+      padding: 0 10px;
+    }
+
+    .map-container {
+      height: clamp(280px, 62dvh, 560px);
+    }
+
+    .map-canvas {
+      padding: clamp(24px, 7vw, 52px);
+    }
+
+    .booth-modal {
+      width: 100vw;
+      max-width: 100vw;
+      margin: 0;
+      padding: 0;
+    }
+
+    .booth-modal[open] {
+      position: fixed;
+      inset: auto 0 0 0;
+      margin: 0;
+      transform: none;
+    }
+
+    .booth-modal-card {
+      border-left: none;
+      border-right: none;
+      border-bottom: none;
+      border-radius: 18px 18px 0 0;
+      padding: 12px 14px calc(14px + env(safe-area-inset-bottom));
+      box-shadow: 0 -12px 36px rgba(43, 18, 27, 0.2);
+    }
+
+    .booth-modal-close {
+      top: 10px;
+      right: 10px;
+    }
+
+    .booth-modal-row {
+      padding: 8px;
+    }
+  }
+</style>

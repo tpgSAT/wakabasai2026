@@ -86,6 +86,9 @@ export type exhibitor = {
     instagramLink: string | null;
     youtubeLink: string | null;
     websiteLink: string | null;
+    circleBoothTitle: string | null;
+    circleBoothLocation: string | null;
+    circleBoothDate: EventDay[] | null;
 }
 
 
@@ -101,7 +104,10 @@ export const exhibitors: exhibitor[] = [
   xLink: "https://x.com/ssr_welcome",
   instagramLink: null,
   youtubeLink: null,
-  websiteLink: "https://www.rogiken.org/"
+  websiteLink: "https://www.rogiken.org/",
+  circleBoothTitle: "制作物展示",
+  circleBoothLocation: "1",
+  circleBoothDate: ["4/11"]
 }
 ,
 {
@@ -114,7 +120,10 @@ export const exhibitors: exhibitor[] = [
   xLink: "https://x.com/losguarajr",
   instagramLink: "https://www.instagram.com/los_guaracheros.jr",
   youtubeLink: "https://youtube.com/@losguaracheros9283?si=zZ2ra43B-A2_Wfax",
-  websiteLink: "http://losguara.s100.coreserver.jp/"
+  websiteLink: "http://losguara.s100.coreserver.jp/",
+  circleBoothTitle: null,
+  circleBoothLocation: null,
+  circleBoothDate: null
 }
 ,
 {
@@ -127,7 +136,10 @@ export const exhibitors: exhibitor[] = [
   xLink: "https://x.com/st_rowing2026",
   instagramLink: "https://www.instagram.com/sciencetokyo_boat2026",
   youtubeLink: "https://youtube.com/channel/UCJYMqA7YaORz-yyWltEw4Hg?si=b9J-G7TCQrMLJRkR",
-  websiteLink: "https://rowingkuramae.com/"
+  websiteLink: "https://rowingkuramae.com/",
+  circleBoothTitle: "漕艇部の活動紹介",
+  circleBoothLocation: "11",
+  circleBoothDate: ["4/10","4/11"]
 }
 ,
 {
@@ -140,7 +152,10 @@ export const exhibitors: exhibitor[] = [
   xLink: "https://x.com/titechVG",
   instagramLink: "https://www.instagram.com/tokodai_vg/",
   youtubeLink: null,
-  websiteLink: "https://www.isct.ac.jp/ja/001/about/organizations/student-support-center"
+  websiteLink: "https://www.isct.ac.jp/ja/001/about/organizations/student-support-center",
+  circleBoothTitle: "VGの活動紹介",
+  circleBoothLocation: "7",
+  circleBoothDate: ["4/11"]
 }
 ,
 {
@@ -153,7 +168,10 @@ export const exhibitors: exhibitor[] = [
   xLink: "https://x.com/titechh2o",
   instagramLink: "https://www.instagram.com/titechh2o/",
   youtubeLink: "https://www.youtube.com/@streetdanceH20titech/",
-  websiteLink: null
+  websiteLink: null,
+  circleBoothTitle: null,
+  circleBoothLocation: null,
+  circleBoothDate: null
 }
 ,
 {
@@ -166,7 +184,10 @@ export const exhibitors: exhibitor[] = [
   xLink: "https://x.com/ttt_shinkan",
   instagramLink: "https://www.instagram.com/titechtennisclub/",
   youtubeLink: null,
-  websiteLink: "https://tokyotech.wixsite.com/tokyotechtennis"
+  websiteLink: "https://tokyotech.wixsite.com/tokyotechtennis",
+  circleBoothTitle: "テニス部の活動紹介",
+  circleBoothLocation: "8",
+  circleBoothDate: ["4/10"]
 }
 ,
 {
@@ -179,7 +200,10 @@ export const exhibitors: exhibitor[] = [
   xLink: "https://x.com/sylph2023",
   instagramLink: "https://www.instagram.com/sylph__isct",
   youtubeLink: null,
-  websiteLink: "https://www.team-sylph.com/"
+  websiteLink: "https://www.team-sylph.com/",
+  circleBoothTitle: "„VR“でハンググライダー体験",
+  circleBoothLocation: "7",
+  circleBoothDate: ["4/10"]
 }
 ,
 {
@@ -192,7 +216,10 @@ export const exhibitors: exhibitor[] = [
   xLink: "https://x.com/traPisct",
   instagramLink: "https://www.instagram.com/trap_welcome/",
   youtubeLink: "https://www.youtube.com/@traptokyotech5606",
-  websiteLink: "https://trap.jp/"
+  websiteLink: "https://trap.jp/",
+  circleBoothTitle: "traPの活動紹介",
+  circleBoothLocation: "10",
+  circleBoothDate: ["4/11"]
 }
 ,
 {
@@ -205,7 +232,10 @@ export const exhibitors: exhibitor[] = [
   xLink: "https://x.com/titech_artclub",
   instagramLink: "https://www.instagram.com/titech_artclub",
   youtubeLink: null,
-  websiteLink: null
+  websiteLink: null,
+  circleBoothTitle: "美術部",
+  circleBoothLocation: "16",
+  circleBoothDate: ["4/10"]
 }
 ,
 {
@@ -218,7 +248,10 @@ export const exhibitors: exhibitor[] = [
   xLink: "https://x.com/JA1YAD",
   instagramLink: null,
   youtubeLink: null,
-  websiteLink: "http://musenken.net/"
+  websiteLink: "http://musenken.net/",
+  circleBoothTitle: "無線研究部　技術者あつまれ〜",
+  circleBoothLocation: "18",
+  circleBoothDate: ["4/10","4/11"]
 }
 ,
 {
@@ -231,7 +264,10 @@ export const exhibitors: exhibitor[] = [
   xLink: "https://x.com/TTglider2026",
   instagramLink: "https://www.instagram.com/titech_soaring/",
   youtubeLink: null,
-  websiteLink: "https://titechgliderclub.wordpress.com/"
+  websiteLink: "https://titechgliderclub.wordpress.com/",
+  circleBoothTitle: "グライダー部の活動紹介",
+  circleBoothLocation: "6",
+  circleBoothDate: ["4/10"]
 }
 ,
 {
@@ -244,7 +280,10 @@ export const exhibitors: exhibitor[] = [
   xLink: "https://x.com/titech_kangen",
   instagramLink: "https://www.instagram.com/titech_kangen",
   youtubeLink: null,
-  websiteLink: "https://isct-orch.com/"
+  websiteLink: "https://isct-orch.com/",
+  circleBoothTitle: "管弦楽団の活動紹介",
+  circleBoothLocation: "17",
+  circleBoothDate: ["4/11"]
 }
 ,
 {
@@ -257,7 +296,10 @@ export const exhibitors: exhibitor[] = [
   xLink: "https://x.com/tokyotech_kyudo",
   instagramLink: "https://www.instagram.com/sciencetokyo_kyudo",
   youtubeLink: "https://www.youtube.com/@Scitokyokyudo",
-  websiteLink: "https://tokyotech-kyudo.com/"
+  websiteLink: "https://tokyotech-kyudo.com/",
+  circleBoothTitle: "弓道部 説明会",
+  circleBoothLocation: "2",
+  circleBoothDate: ["4/11"]
 }
 ,
 {
@@ -270,7 +312,10 @@ export const exhibitors: exhibitor[] = [
   xLink: "https://x.com/platanus_piano",
   instagramLink: "https://www.instagram.com/platanus_piano/",
   youtubeLink: "https://www.youtube.com/@platanus-piano-ensemble",
-  websiteLink: "https://www.platanus-isct.com/"
+  websiteLink: "https://www.platanus-isct.com/",
+  circleBoothTitle: null,
+  circleBoothLocation: null,
+  circleBoothDate: null
 }
 ,
 {
@@ -283,7 +328,10 @@ export const exhibitors: exhibitor[] = [
   xLink: "https://x.com/fscshinkan2026",
   instagramLink: "https://www.instagram.com/fsc_folksong",
   youtubeLink: null,
-  websiteLink: null
+  websiteLink: null,
+  circleBoothTitle: "フォークソングサークル(FSC)",
+  circleBoothLocation: "16",
+  circleBoothDate: ["4/11"]
 }
 ,
 {
@@ -296,7 +344,10 @@ export const exhibitors: exhibitor[] = [
   xLink: "https://x.com/titechdesignlab",
   instagramLink: "https://instagram.com/design_titech",
   youtubeLink: null,
-  websiteLink: "https://lit.link/en/c3dc956c-9e9f-47b0-a3de-154312b59e4b?fbclid=PAZXh0bgNhZW0CMTEAAaYY975MaYaJ2mdzqBN0kbwxuTID_mASRGCkjE2WSzmv3wElEzLDUV0EwFE_aem_ZZJMKK_bdHEiwzdWRaQs_w"
+  websiteLink: "https://lit.link/en/c3dc956c-9e9f-47b0-a3de-154312b59e4b?fbclid=PAZXh0bgNhZW0CMTEAAaYY975MaYaJ2mdzqBN0kbwxuTID_mASRGCkjE2WSzmv3wElEzLDUV0EwFE_aem_ZZJMKK_bdHEiwzdWRaQs_w",
+  circleBoothTitle: "デザイン研究会の活動紹介",
+  circleBoothLocation: "1",
+  circleBoothDate: ["4/10"]
 }
 ,
 {
@@ -309,7 +360,10 @@ export const exhibitors: exhibitor[] = [
   xLink: "https://x.com/jug_tech",
   instagramLink: "https://www.instagram.com/jug_tech",
   youtubeLink: "https://youtube.com/@jugtech6807",
-  websiteLink: "http://www.jugtech.org"
+  websiteLink: "http://www.jugtech.org",
+  circleBoothTitle: null,
+  circleBoothLocation: null,
+  circleBoothDate: null
 }
 ,
 {
@@ -322,7 +376,10 @@ export const exhibitors: exhibitor[] = [
   xLink: "https://x.com/scitech_shinkan",
   instagramLink: "https://www.instagram.com/shinkan_scitech/",
   youtubeLink: null,
-  websiteLink: "https://shinkan.t-scitech.net/"
+  websiteLink: "https://shinkan.t-scitech.net/",
+  circleBoothTitle: "ScienceTechnoの活動紹介",
+  circleBoothLocation: "5",
+  circleBoothDate: ["4/10","4/11"]
 }
 ,
 {
@@ -335,7 +392,10 @@ export const exhibitors: exhibitor[] = [
   xLink: "https://x.com/titechsadou",
   instagramLink: "https://www.instagram.com/tokodaisado",
   youtubeLink: null,
-  websiteLink: "https://sites.google.com/site/tokyotechsadou/"
+  websiteLink: "https://sites.google.com/site/tokyotechsadou/",
+  circleBoothTitle: "裏千家茶道部体験会・相談会",
+  circleBoothLocation: "8",
+  circleBoothDate: ["4/11"]
 }
 ,
 {
@@ -348,7 +408,10 @@ export const exhibitors: exhibitor[] = [
   xLink: "https://x.com/chorkleines_wlc",
   instagramLink: "https://www.instagram.com/chorkleines_wlc",
   youtubeLink: "http://www.youtube.com/@chor-kleines",
-  websiteLink: "https://www.chorkleines.com/"
+  websiteLink: "https://www.chorkleines.com/",
+  circleBoothTitle: "コール・クライネスの活動紹介",
+  circleBoothLocation: "4",
+  circleBoothDate: ["4/10","4/11"]
 }
 ,
 {
@@ -361,7 +424,10 @@ export const exhibitors: exhibitor[] = [
   xLink: "https://x.com/jizi_koudaisai",
   instagramLink: "https://www.instagram.com/jizi_koudaisai/",
   youtubeLink: "https://www.youtube.com/channel/UCPb33qE0hjNqtr1kfihfhng",
-  websiteLink: "https://jizi.jp/"
+  websiteLink: "https://jizi.jp/",
+  circleBoothTitle: "What's jizi",
+  circleBoothLocation: "19",
+  circleBoothDate: ["4/11"]
 }
 ,
 {
@@ -374,7 +440,10 @@ export const exhibitors: exhibitor[] = [
   xLink: "https://x.com/tokyotechaikido",
   instagramLink: "https://www.instagram.com/aikido_tokyotech",
   youtubeLink: null,
-  websiteLink: "https://tokyotech-aikido.studio.site/"
+  websiteLink: "https://tokyotech-aikido.studio.site/",
+  circleBoothTitle: "合氣道部の活動紹介",
+  circleBoothLocation: "14",
+  circleBoothDate: ["4/11"]
 }
 ,
 {
@@ -387,7 +456,10 @@ export const exhibitors: exhibitor[] = [
   xLink: "https://x.com/Toko_a_cappella",
   instagramLink: "https://www.instagram.com/titechajy",
   youtubeLink: "https://youtube.com/channel/UCgcJWQuacXZsXoUMaoPgoQw?si=uunZ4qqjwnZM5cSZ",
-  websiteLink: "https://titechajy.jimdofree.com/"
+  websiteLink: "https://titechajy.jimdofree.com/",
+  circleBoothTitle: null,
+  circleBoothLocation: null,
+  circleBoothDate: null
 }
 ,
 {
@@ -400,7 +472,10 @@ export const exhibitors: exhibitor[] = [
   xLink: "https://x.com/titech_animeken",
   instagramLink: null,
   youtubeLink: "https://www.youtube.com/channel/UCo0e2tv6k3gVVV6BDFc1IMQ",
-  websiteLink: null
+  websiteLink: null,
+  circleBoothTitle: "アニメ制作って実際何するの？",
+  circleBoothLocation: "9",
+  circleBoothDate: ["4/11"]
 }
 ,
 {
@@ -413,7 +488,10 @@ export const exhibitors: exhibitor[] = [
   xLink: "https://x.com/olt_shinkan",
   instagramLink: "https://www.instagram.com/scitokyo_olt",
   youtubeLink: null,
-  websiteLink: "https://olt.main.jp/"
+  websiteLink: "https://olt.main.jp/",
+  circleBoothTitle: "オリエンって何ですか？",
+  circleBoothLocation: "13",
+  circleBoothDate: ["4/11"]
 }
 ,
 {
@@ -426,7 +504,10 @@ export const exhibitors: exhibitor[] = [
   xLink: "https://x.com/STswim_2026",
   instagramLink: "https://www.instagram.com/isct.swim.2026",
   youtubeLink: null,
-  websiteLink: "http://titswim.web.fc2.com/about.html"
+  websiteLink: "http://titswim.web.fc2.com/about.html",
+  circleBoothTitle: "水泳部と話そう",
+  circleBoothLocation: "19",
+  circleBoothDate: ["4/10"]
 }
 ,
 {
@@ -439,7 +520,10 @@ export const exhibitors: exhibitor[] = [
   xLink: "https://x.com/titechrail",
   instagramLink: null,
   youtubeLink: null,
-  websiteLink: "https://titrail.sakura.ne.jp/"
+  websiteLink: "https://titrail.sakura.ne.jp/",
+  circleBoothTitle: "鉄道研究部",
+  circleBoothLocation: "14",
+  circleBoothDate: ["4/10"]
 }
 ,
 {
@@ -452,7 +536,10 @@ export const exhibitors: exhibitor[] = [
   xLink: "https://x.com/gitakenbushitsu",
   instagramLink: "https://instagram.com/gitakenbushitsu/",
   youtubeLink: "https://youtube.com/channel/UCSPn3ifOw_Rp5xcBGU_1WvA?si=NF-9ZkETXSBsl97L",
-  websiteLink: "https://gitakenbushitsu.wixsite.com/gitaken"
+  websiteLink: "https://gitakenbushitsu.wixsite.com/gitaken",
+  circleBoothTitle: "クラッシックギター体験会",
+  circleBoothLocation: "2",
+  circleBoothDate: ["4/10"]
 }
 ,
 {
@@ -465,7 +552,10 @@ export const exhibitors: exhibitor[] = [
   xLink: "https://x.com/astro_titech",
   instagramLink: "https://www.instagram.com/astro_titech",
   youtubeLink: null,
-  websiteLink: "https://titastro.web.fc2.com/index.html"
+  websiteLink: "https://titastro.web.fc2.com/index.html",
+  circleBoothTitle: "天文研究部 活動紹介ブース",
+  circleBoothLocation: "9",
+  circleBoothDate: ["4/10"]
 }
 ,
 {
@@ -478,7 +568,10 @@ export const exhibitors: exhibitor[] = [
   xLink: "https://x.com/titech0505",
   instagramLink: null,
   youtubeLink: null,
-  websiteLink: null
+  websiteLink: null,
+  circleBoothTitle: "レゴ同好会の活動紹介",
+  circleBoothLocation: "10",
+  circleBoothDate: ["4/10"]
 }
 ,
 {
@@ -491,7 +584,10 @@ export const exhibitors: exhibitor[] = [
   xLink: "https://x.com/scitokyo_fen",
   instagramLink: "https://www.instagram.com/sciencetokyo_fencing",
   youtubeLink: null,
-  websiteLink: null
+  websiteLink: null,
+  circleBoothTitle: "フェンシング体験",
+  circleBoothLocation: "6",
+  circleBoothDate: ["4/11"]
 }
 ,
 {
@@ -504,7 +600,10 @@ export const exhibitors: exhibitor[] = [
   xLink: "https://x.com/sciencetokyoac",
   instagramLink: null,
   youtubeLink: null,
-  websiteLink: "https://www.isctac.jp/"
+  websiteLink: "https://www.isctac.jp/",
+  circleBoothTitle: "自動車部活動紹介",
+  circleBoothLocation: "17",
+  circleBoothDate: ["4/10"]
 }
 ,
 {
@@ -517,7 +616,10 @@ export const exhibitors: exhibitor[] = [
   xLink: null,
   instagramLink: "https://www.instagram.com/buffs.shinkan.2026",
   youtubeLink: null,
-  websiteLink: "https://titech-buffaloes.com/"
+  websiteLink: "https://titech-buffaloes.com/",
+  circleBoothTitle: "アメフトの活動紹介",
+  circleBoothLocation: "15",
+  circleBoothDate: ["4/10","4/11"]
 }
 ,
 {
@@ -530,7 +632,10 @@ export const exhibitors: exhibitor[] = [
   xLink: null,
   instagramLink: null,
   youtubeLink: null,
-  websiteLink: null
+  websiteLink: null,
+  circleBoothTitle: null,
+  circleBoothLocation: null,
+  circleBoothDate: null
 }
 ,
 {
@@ -543,7 +648,10 @@ export const exhibitors: exhibitor[] = [
   xLink: "https://x.com/scitokyo_rfc",
   instagramLink: "https://www.instagram.com/scitokyo_rfc_2025",
   youtubeLink: null,
-  websiteLink: "https://sciencetokyo-rfc.site/"
+  websiteLink: "https://sciencetokyo-rfc.site/",
+  circleBoothTitle: "ラグビー部活動紹介",
+  circleBoothLocation: "3",
+  circleBoothDate: ["4/10","4/11"]
 }
 ,
 {
@@ -556,7 +664,10 @@ export const exhibitors: exhibitor[] = [
   xLink: "https://x.com/SciTokyo_ozone",
   instagramLink: "https://www.instagram.com/tit_shochiku",
   youtubeLink: null,
-  websiteLink: null
+  websiteLink: null,
+  circleBoothTitle: "お笑いサークルオゾンの活動紹介",
+  circleBoothLocation: "13",
+  circleBoothDate: ["4/10"]
 }
 ,
 {
@@ -569,7 +680,10 @@ export const exhibitors: exhibitor[] = [
   xLink: "https://x.com/TPGardener/",
   instagramLink: "https://www.instagram.com/taki_plaza_gardener/",
   youtubeLink: null,
-  websiteLink: "https://tpgd.jp/"
+  websiteLink: "https://tpgd.jp/",
+  circleBoothTitle: "TPGの活動紹介",
+  circleBoothLocation: "12",
+  circleBoothDate: ["4/10","4/11"]
 }
 
 ]

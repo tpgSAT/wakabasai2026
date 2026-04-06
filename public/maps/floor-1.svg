@@ -1,0 +1,25 @@
+<svg width="1216" height="786" viewBox="0 0 1216 786" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="floor-1">
+<rect id="bg" width="1216" height="786" fill="white"/>
+<line id="Line 41" x1="531" y1="37.5" x2="594" y2="37.5" stroke="black"/>
+<line id="Line 44" x1="486.5" y1="38" x2="486.5" y2="525" stroke="black"/>
+<line id="Line 45" x1="486" y1="525.5" x2="224" y2="525.5" stroke="black"/>
+<line id="Line 48" x1="223.5" y1="573" x2="223.5" y2="525" stroke="black"/>
+<line id="Line 46" x1="521" y1="573.5" x2="223" y2="573.5" stroke="black"/>
+<line id="Line 47" x1="520.5" y1="709" x2="520.5" y2="573" stroke="black"/>
+<line id="Line 42" x1="704.625" y1="374.979" x2="592.785" y2="38.3617" stroke="black"/>
+<line id="Line 43" x1="790.15" y1="650.193" x2="716.686" y2="427.609" stroke="black"/>
+<line id="Line 44_2" x1="808" y1="708.5" x2="521" y2="708.5" stroke="black"/>
+<line id="Line 45_2" x1="847" y1="428.5" x2="716" y2="428.5" stroke="black"/>
+<line id="Line 47_2" x1="527.5" y1="402" x2="527.5" y2="313" stroke="black"/>
+<line id="Line 48_2" x1="562.5" y1="402" x2="562.5" y2="313" stroke="black"/>
+<line id="Line 46_2" x1="836" y1="375.5" x2="704" y2="375.5" stroke="black"/>
+<rect id="toilet" x="330" y="575" width="179" height="128" fill="#B4B4B4"/>
+<g id="elevator">
+<path d="M224 575H288V639H224V575Z" fill="#B4B4B4"/>
+<path d="M224 575H288V639H224V575Z" fill="#B4B4B4"/>
+<path d="M224 575H288V639H224V575Z" fill="#B4B4B4"/>
+<path d="M224 575H288V639H224V575Z" fill="#B4B4B4"/>
+</g>
+</g>
+</svg>
