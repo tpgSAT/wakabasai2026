@@ -12,6 +12,7 @@ const LIMIT = 40;
 const isLong = exhibitorDescription.length > LIMIT;
 const shortDescription = isLong ? exhibitorDescription.slice(0, LIMIT) + "…" : exhibitorDescription;
 const mapLink = circleBoothLocation ? `/map?floor=B2&booth=circle-booth-${encodeURIComponent(circleBoothLocation)}` : null;
+const hasTimetableLink = booths.some(booth => booth.includes("ステージ企画") || booth.includes("ワークショップ"));
 ---
 <div class="exhibitor-card">
     <div class="exhibitor-header">
@@ -45,6 +46,9 @@ const mapLink = circleBoothLocation ? `/map?floor=B2&booth=circle-booth-${encode
              </div>
              {mapLink && (
                 <a class="map-link-btn" href={mapLink}>マップを見る</a>
+            )}
+            {hasTimetableLink && (
+                <a class="map-link-btn" href="/timetable">タイムテーブルを見る</a>
             )}
              <Button text="詳細を見る" style="outlined" class="details-btn" />
              </>
