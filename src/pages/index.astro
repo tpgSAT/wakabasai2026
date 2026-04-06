@@ -5,6 +5,7 @@ import Section from '@components/layout/Section.astro';
 import SectionTitle from '@components/SectionTitle.astro';
 import BoothCard from '@components/BoothCard.astro';
 import Button from '@components/Button.astro';
+import FaqAccordion from '@components/FaqAccordion.astro';
 
 import { boothData } from '@lib/booth';
 
@@ -13,6 +14,32 @@ import HeadingAbout from '@assets/heading/about.svg';
 import HeadingBooth from '@assets/heading/booth.svg';
 import HeadingFAQ from '@assets/heading/faq.svg';
 import HeadingHost from '@assets/heading/host.svg';
+
+const faqItems = [
+  {
+    question: '若葉祭はいつ開催されますか？',
+    answer: '2026年4月10日(金)・11日(土)に開催されます。',
+  },
+  {
+    question: '会場はどこですか？',
+    answer: 'Taki Plazaおよび70周年記念講堂で開催されます。',
+    links: [{ label: 'マップを見る', href: '/map' }],
+  },
+  {
+    question: 'どんな企画がありますか？',
+    answer: 'サークルブース、ワークショップ、ステージ企画など、さまざまな新歓企画があります。',
+    links: [{ label: '出展団体一覧を見る', href: '/exhibitors' }],
+  },
+  {
+    question: '途中から参加しても大丈夫ですか？',
+    answer: 'はい、途中参加・途中退出も可能です。授業や予定の合間に気軽にお越しください。',
+  },
+  {
+    question: 'このイベントの主催団体は？',
+    answer: 'Taki Plazaにおいて、国際交流と学生支援の促進を目的に活動している公認学生団体TPGが運営しています。また、蔵前工業会のご支援もいただいています。',
+    links: [{ label: 'TPG公式サイトを見る', href: 'https://tpgd.jp/' }],
+  },
+];
 ---
 
 <Layout title="トップ">
@@ -38,6 +65,7 @@ import HeadingHost from '@assets/heading/host.svg';
   </Section>
   <Section>
     <SectionTitle headingSVG={HeadingFAQ} alt="よくある質問" />
+    <FaqAccordion items={faqItems} />
   </Section>
 </Layout>
 
