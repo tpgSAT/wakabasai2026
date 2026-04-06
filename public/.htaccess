@@ -1,2 +1,5 @@
 ErrorDocument 404 /404.html
 RewriteEngine On
+
+# Short exhibitor links: /r/exhibitor/{index} -> /exhibitors?id={index}
+RewriteRule ^r/exhibitor/([0-9]+)/?$ /exhibitors?id=$1 [R=302,L,NC]
