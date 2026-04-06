@@ -1,7 +1,11 @@
 ---
 import Layout from '@layouts/Layout.astro';
 import Section from '@components/layout/Section.astro';
+import PageTitle from '@components/PageTitle.astro';
 import { exhibitors } from '@lib/exhibitors';
+
+
+import titleSVG from '@assets/map/title.svg';
 
 const floors = [
   { id: 'B2', label: 'B2F', available: true },
@@ -45,9 +49,9 @@ for (const exhibitor of exhibitors) {
 
 <Layout title="マップ">
   <Section>
-    <h1 class="page-title">フロアマップ</h1>
+    <PageTitle titleSVG={titleSVG} />
     <p class="text-body">
-      ボタンを押すとフロアを切り替えられます。URLに現在のフロアが保存されるため、共有や再訪時も同じ階から表示できます。
+      ボタンを押してフロアを切り替えられます。マップは拡大できます（Ctrl + ホイール、ピンチ、PCはドラッグで移動）
     </p>
   </Section>
 
@@ -70,9 +74,6 @@ for (const exhibitor of exhibitors) {
       </div>
 
       <div class="map-stage">
-        <div class="map-toolbar">
-          <p class="map-hint">※ マップは拡大できます（Ctrl + ホイール、ピンチ、PCはドラッグで移動）</p>
-        </div>
         <p id="map-status" class="map-status" aria-live="polite"></p>
         <div id="map-container" class="map-container" role="tabpanel" tabindex="0"></div>
         <dialog id="booth-modal" class="booth-modal">
@@ -356,18 +357,32 @@ for (const exhibitor of exhibitors) {
       (el) => el instanceof SVGGraphicsElement
     );
 
+  const BOOTH_TYPE_STYLE = {
+    'サークルブース': { fill: '#ff7ba7', hoverFill: '#ff5b95', stroke: '#ffffff' },
+    'ワークショップ企画': { fill: '#ffb36b', hoverFill: '#ff9b42', stroke: '#ffffff' },
+    ワークショップ: { fill: '#ffb36b', hoverFill: '#ff9b42', stroke: '#ffffff' },
+    TPG企画: { fill: '#7ddf8f', hoverFill: '#57cc6d', stroke: '#ffffff' },
+    'ボードゲーム紹介': { fill: '#7ddf8f', hoverFill: '#57cc6d', stroke: '#ffffff' },
+    'キムワイプ卓球': { fill: '#7ddf8f', hoverFill: '#57cc6d', stroke: '#ffffff' },
+  };
+
+  const getBoothStyle = (boothEl) =>
+    BOOTH_TYPE_STYLE[boothEl.dataset.boothType ?? ''] ?? BOOTH_TYPE_STYLE['サークルブース'];
+
   const applyDefaultBoothStyle = (boothEl) => {
+    const style = getBoothStyle(boothEl);
     boothEl.style.opacity = '0.96';
-    boothEl.style.fill = '#ff7ba7';
-    boothEl.style.stroke = '#ffffff';
+    boothEl.style.fill = style.fill;
+    boothEl.style.stroke = style.stroke;
     boothEl.style.strokeWidth = '2';
     boothEl.style.filter = '';
   };
 
   const applyHoverBoothStyle = (boothEl) => {
+    const style = getBoothStyle(boothEl);
     boothEl.style.opacity = '1';
-    boothEl.style.fill = '#ff5b95';
-    boothEl.style.stroke = '#ffffff';
+    boothEl.style.fill = style.hoverFill;
+    boothEl.style.stroke = style.stroke;
     boothEl.style.strokeWidth = '2';
   };
 
@@ -479,6 +494,8 @@ for (const exhibitor of exhibitors) {
     );
     boothElements.forEach((boothEl) => {
       if (!(boothEl instanceof SVGElement)) return;
+      const boothType = getBoothDetail(boothEl.id).type;
+      boothEl.dataset.boothType = boothType;
       applyDefaultBoothStyle(boothEl);
       boothEl.classList.add('is-clickable-booth');
       boothEl.setAttribute('tabindex', '0');
