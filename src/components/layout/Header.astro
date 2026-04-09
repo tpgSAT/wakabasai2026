@@ -7,6 +7,7 @@ const navLinks = [
   { label: 'タイムテーブル', href: '/timetable' },
   { label: 'マップ', href: '/map' },
   { label: '出展団体', href: '/exhibitors' },
+  { label: '電子パンフレット', href: '/pamphlet' },
   { label: 'TPG公式サイト', href: 'https://www.tpgd.jp/', external: true },
 ];
 ---
@@ -232,7 +233,7 @@ const navLinks = [
     transform: translateX(100%);
     transition: transform 0.3s ease;
     overflow-y: auto;
-    box-shadow: -4px 0 24px rgba(0, 0, 0, 0.12);
+    box-shadow: -8px 0 24px rgba(73, 49, 58, 0.18);
     padding-top: 4rem;
   }
 
@@ -246,20 +247,20 @@ const navLinks = [
     padding: 0.5rem 0;
   }
 
-  .nav-mobile a {
+  .mobile-link {
     display: block;
     padding: 1rem 1.75rem;
     font-size: 1rem;
-    font-weight: 500;
+    font-weight: 600;
     color: #1a1a1a;
     text-decoration: none;
     letter-spacing: 0.03em;
     border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-    transition: background 0.15s;
+    transition: background 0.15s, color 0.15s;
     font-family: 'Noto Sans JP Variable', 'Noto Sans JP', sans-serif;
   }
 
-  .nav-mobile a:hover {
+  .mobile-link:hover {
     background: rgba(0, 0, 0, 0.04);
   }
 
@@ -277,6 +278,11 @@ const navLinks = [
 
   /* Mobile: hide desktop nav, show hamburger */
   @media (max-width: 680px) {
+    .header-inner {
+      margin: 0.35rem 0.5rem;
+      padding: 0.45rem 0.6rem;
+    }
+
     .nav-desktop {
       display: none;
     }

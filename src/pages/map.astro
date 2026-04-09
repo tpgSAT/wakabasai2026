@@ -2,6 +2,7 @@
 import Layout from '@layouts/Layout.astro';
 import Section from '@components/layout/Section.astro';
 import PageTitle from '@components/PageTitle.astro';
+import Button from '@components/Button.astro';
 import { exhibitors } from '@lib/exhibitors';
 
 
@@ -86,6 +87,9 @@ for (const exhibitor of exhibitors) {
             <div class="booth-modal-row">
               <p id="booth-modal-detail-label" class="booth-modal-label">開催日ごとの内容</p>
               <div id="booth-modal-schedule" class="booth-modal-schedule"></div>
+              <div id="booth-modal-timetable-link" class="booth-modal-timetable-link" hidden>
+                <Button href="/timetable/" text="タイムテーブルを見る" />
+              </div>
             </div>
           </article>
         </dialog>
@@ -104,6 +108,7 @@ for (const exhibitor of exhibitors) {
   const boothModalSubtitle = document.getElementById('booth-modal-subtitle');
   const boothModalDetailLabel = document.getElementById('booth-modal-detail-label');
   const boothModalSchedule = document.getElementById('booth-modal-schedule');
+  const boothModalTimetableLink = document.getElementById('booth-modal-timetable-link');
   const boothModalCard = boothModal?.querySelector('.booth-modal-card');
   const boothModalCloseButton = boothModal?.querySelector('[data-booth-modal-close]');
 
@@ -160,7 +165,7 @@ for (const exhibitor of exhibitors) {
       'booth-workshop-1',
       {
         type: 'ワークショップ企画',
-        title: 'ワークショップ企画（仮）1',
+        title: 'Attic Lab',
         description: 'ワークショップ企画の説明文（仮）です。',
       },
     ],
@@ -168,7 +173,7 @@ for (const exhibitor of exhibitors) {
       'booth-workshop-2',
       {
         type: 'ワークショップ企画',
-        title: 'ワークショップ企画（仮）2',
+        title: 'Attic Office',
         description: 'ワークショップ企画の説明文（仮）です。',
       },
     ],
@@ -176,7 +181,7 @@ for (const exhibitor of exhibitors) {
       'booth-takiplazastage',
       {
         type: 'ステージ企画',
-        title: 'ステージ企画（仮）',
+        title: 'ステージ企画',
         description: 'ステージ企画の説明文（仮）です。',
       },
     ],
@@ -310,6 +315,7 @@ for (const exhibitor of exhibitors) {
 
   const formatBoothLabel = (boothId) => {
     const matched = boothId.match(/^circle-booth-(\d+)$/);
+    if (boothId === 'booth-takiplazastage') return 'Taki Plaza ステージ';
     if (!matched) return STATIC_BOOTH_DETAIL_MAP.get(boothId)?.title ?? boothId;
     return `サークルブース ${matched[1]}`;
   };
@@ -344,9 +350,10 @@ for (const exhibitor of exhibitors) {
       .replaceAll("'", '&#39;');
 
   const renderBoothSchedule = (boothId, overrides = {}) => {
-    if (!boothModalSchedule) return;
+    if (!boothModalSchedule || !boothModalTimetableLink) return;
 
     if (overrides.title || overrides.organizer) {
+      boothModalTimetableLink.hidden = true;
       const title = escapeHtml(overrides.title ?? formatBoothLabel(boothId));
       const organizer = escapeHtml(overrides.organizer ?? DEFAULT_BOOTH_ORGANIZER);
       boothModalSchedule.innerHTML = `
@@ -360,15 +367,12 @@ for (const exhibitor of exhibitors) {
     }
 
     if (!boothId.startsWith('circle-booth-')) {
-      const boothDetail = getBoothDetail(boothId, overrides);
-      boothModalSchedule.innerHTML = `
-        <div class="booth-schedule-item">
-          <p class="booth-modal-value">${escapeHtml(boothDetail.description)}</p>
-        </div>
-      `;
+      boothModalSchedule.innerHTML = '';
+      boothModalTimetableLink.hidden = false;
       return;
     }
 
+    boothModalTimetableLink.hidden = true;
     const dayDetails = getBoothDayDetails(boothId);
     boothModalSchedule.innerHTML = EVENT_DAYS.map((day) => {
       const detail = dayDetails?.[day];
@@ -623,7 +627,7 @@ for (const exhibitor of exhibitors) {
     boothModalTitle.textContent = modalTitle;
     boothModalSubtitle.textContent = formatBoothLabel(boothId);
     if (boothModalDetailLabel) {
-      boothModalDetailLabel.textContent = isCircleBooth ? '開催日ごとの内容' : '企画説明';
+      boothModalDetailLabel.textContent = isCircleBooth ? '開催日ごとの内容' : 'タイムテーブル';
     }
     renderBoothSchedule(boothId, detailOverrides);
 
@@ -1239,6 +1243,10 @@ for (const exhibitor of exhibitors) {
     line-height: 1.6;
   }
 
+  .booth-modal-timetable-link {
+    margin-top: 6px;
+  }
+
   .booth-modal-schedule {
     margin-top: 8px;
     display: grid;
@@ -1443,6 +1451,7 @@ for (const exhibitor of exhibitors) {
       font-size: 12px;
       line-height: 1.45;
     }
+
   }
 
   @media (prefers-reduced-motion: reduce) {
