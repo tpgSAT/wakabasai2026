@@ -26,7 +26,7 @@ export const boothData: Booth[] = [
         boothLocation: ['Taki Plaza 2F', 'Taki Plaza B2F'],
         hasMapLink: true,
         hasCircleLink: true,
-        MapLink: '/map#',
+        MapLink: '/map/?floor=B2',
     },
     {
         boothType: 'サークル新歓企画',
@@ -36,7 +36,7 @@ export const boothData: Booth[] = [
         boothLocation: ['Taki Plaza 2F'],
         hasMapLink: true,
         hasCircleLink: true,
-        MapLink: '/map#',
+        MapLink: '/map/?floor=2',
     },
     {
         boothType: 'サークル新歓企画',
@@ -56,7 +56,7 @@ export const boothData: Booth[] = [
         boothLocation: ['Taki Plaza B1F'],
         hasMapLink: true,
         hasCircleLink: false,
-        MapLink: '/map#',
+        MapLink: '/map/?floor=B1&booth=booth-boardgame',
     },
     {
         boothType: 'TPG企画',
@@ -76,6 +76,6 @@ export const boothData: Booth[] = [
         boothLocation: ['Taki Plaza B1F'],
         hasMapLink: true,
         hasCircleLink: false,
-        MapLink: '/map#',
+        MapLink: '/map/?floor=B1&booth=booth-pingpong',
     },
 ];
