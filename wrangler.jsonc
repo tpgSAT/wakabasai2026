@@ -1,0 +1,7 @@
+{
+  "name": "wakabasai2026",
+  "compatibility_date": "2026-04-20", // Update to the day you deploy
+  "assets": {
+    "directory": "./dist",
+  }
+}
